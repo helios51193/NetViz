@@ -1,0 +1,35 @@
+#graph {
+    height: 600px;
+    width: 100%;
+  }
+
+  #legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    width: calc(100% / 8 - 10px); /* Adjust width for 6 items per row */
+}
+
+.legend-item-color {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.legend-item-label {
+    font-size: 18px;
+}
+
+.highlighted {
+    background-color: #f0f8ff; /* Example highlight color */
+    border-color: #007bff; /* Example border color */
+}

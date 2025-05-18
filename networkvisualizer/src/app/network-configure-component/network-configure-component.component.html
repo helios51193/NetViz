@@ -1,0 +1,233 @@
+<div class="container-fluid">
+    <div class="row mt-1">
+        <div class="col-md-3"></div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="card-title">
+                        <h1>Network Properties : {{session_name()}}</h1>
+                    </div>
+                    <div class="card-subtitle">
+                        <h3>Meta Data</h3>
+                    </div>
+                    <div class="card-text">
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <strong>Number of Nodes</strong> : {{meta_data()['num_nodes']}}
+                            </li>
+                            <li class="list-group-item">
+                                <strong>Number of Edges</strong> : {{meta_data()['num_edges']}}
+                            </li>
+                            <li class="list-group-item">
+                                <strong>Directed</strong> : {{ meta_data()['directed']}}
+                            </li>
+                            <li class="list-group-item">
+                                <strong>Has Weights</strong> : {{meta_data()['has_weighted']}}
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-subtitle mt-2">
+                        <h3>Node Attributes</h3>
+                    </div>
+                    <div class="card-text">
+                        <table class="table table-striped h-50">
+                            <thead>
+                                <tr>
+                                    <th class="text-center col-md-1">S.No</th>
+                                    <th class="col-md-2">Attribute</th>
+                                    <th class="col-md-2">Present in All ?</th>
+                                    <th class="col-md-1">Type</th>
+                                    <th class="col-md-2">Unique Values</th>
+                                    <th class="col-md-1">Min</th>
+                                    <th class="col-md-1">Max</th>
+                                    <th class="col-md-1"> Keep </th>
+
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for(node_property of node_properties_current(); track node_property['sno']){
+                                <tr>
+                                    <td class="text-center col-md-1">{{node_property['sno']}}</td>
+                                    <td class="col-md-2">{{node_property['name']}}</td>
+                                    <td class="col-md-1 text-center">{{node_property['is_present_in_all'] == true ?
+                                        "Yes" : 'No'}}</td>
+                                    <td class="col-md-2">
+                                        {{
+                                        node_property['dtype'] == 'str' ? 'String' :
+                                        node_property['dtype'] == 'int' || node_property['dtype'] == 'float' ? 'Number'
+                                        :
+                                        node_property['dtype'] == 'bool'? 'Boolean' :
+                                        node_property['dtype'] == 'datetime'? 'Datetime' :
+                                        "mixed"
+                                        }}
+                                    </td>
+                                    <td class="col-md-2">
+                                        <select class="form-control">
+                                            @for( value of node_property['unique_values'];track $index){
+                                            <option value="{{value}}">{{value}}</option>
+                                            }
+                                            <option selected>Values</option>
+                                        </select>
+                                    </td>
+                                    <td class="col-md-1 text-center">{{
+                                        node_property['min'] ? node_property['min'] : "N.A."
+                                        }}</td>
+                                    <td class="col-md-1 text-center">{{
+                                        node_property['max'] ? node_property['max'] : "N.A."
+                                        }}</td>
+                                    <td class="col-md-1 text-center">
+                                        <input type="checkbox" [(checked)]="node_property['keep']"
+                                            (change)="onKeepChangeNode($event, node_property['name'])"
+                                            aria-label="Checkbox for following text input">
+                                    </td>
+                                </tr>
+                                }
+                            </tbody>
+                        </table>
+                        <div class="d-flex justify-content-between p-2">
+                            <ngb-pagination [collectionSize]="collectionSizeNode()" [(page)]="node_page"
+                                [pageSize]="node_page_size" (pageChange)="refreshPageNode()">
+                            </ngb-pagination>
+                        </div>
+                    </div>
+                    <div class="card-subtitle mt-1">
+                        <h3>Edge Attributes</h3>
+                    </div>
+                    <div class="card-text">
+                        <p>Select the attributes you want to use as filters</p>
+                        <table class="table table-striped h-50">
+                            <thead>
+                                <tr>
+                                    <th class="text-center col-md-1">S.No</th>
+                                    <th class="col-md-2">Attribute</th>
+                                    <th class="col-md-2">Present in All ?</th>
+                                    <th class="col-md-1">Type</th>
+                                    <th class="col-md-2">Unique Values</th>
+                                    <th class="col-md-1">Min</th>
+                                    <th class="col-md-1">Max</th>
+                                    <th class="col-md-1"> Keep </th>
+
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for(edge_property of edge_properties_current(); track edge_property['sno']){
+                                <tr>
+                                    <td class="text-center col-md-1">{{edge_property['sno']}}</td>
+                                    <td class="col-md-2">{{edge_property['name']}}</td>
+                                    <td class="col-md-1 text-center">{{edge_property['is_present_in_all'] == true ?
+                                        "Yes" :
+                                        'No'}}</td>
+                                    <td class="col-md-2">
+                                        {{
+                                        edge_property['dtype'] == 'str' ? 'String' :
+                                        edge_property['dtype'] == 'int' || edge_property['dtype'] == 'float' ? 'Number':
+                                        edge_property['dtype'] == 'bool'? 'Boolean' :
+                                        edge_property['dtype'] == 'datetime'? 'Datetime' :
+                                        "mixed"
+                                        }}
+                                    </td>
+                                    <td class="col-md-2">
+                                        <select class="form-control">
+                                            @for( value of edge_property['unique_values'];track $index){
+                                            <option value="{{value}}">{{value}}</option>
+                                            }
+                                            <option selected>Values</option>
+                                        </select>
+                                    </td>
+                                    <td class="col-md-1 text-center">{{
+                                        edge_property['min'] ? edge_property['min'] : "N.A."
+                                        }}</td>
+                                    <td class="col-md-1 text-center">{{
+                                        edge_property['max'] ? edge_property['max'] : "N.A."
+                                        }}</td>
+                                    <td class="col-md-1 text-center">
+                                        <input type="checkbox" [(checked)]="edge_property['keep']"
+                                            (change)="onKeepChangeEdge($event, edge_property['name'])"
+                                            aria-label="Checkbox for following text input">
+                                    </td>
+                                </tr>
+                                }
+                            </tbody>
+                        </table>
+                        <div class="d-flex justify-content-between p-2">
+                            <ngb-pagination [collectionSize]="collectionSizeEdge()" [(page)]="edge_page"
+                                [pageSize]="edge_page_size" (pageChange)="refreshPageEdge()">
+                            </ngb-pagination>
+                        </div>
+                        <div class="mt-1" style="float: right">
+                            <button (click)="onSubmit()" class="mt-2" type="button" class="btn btn-primary">
+                                View Graph
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @if(errorMessage != ""){
+                <div class="card">
+                    <div class="card-body">
+                        <p class="alert alert-danger">{{ errorMessage }}</p>
+                    </div>
+                </div>
+            }
+        </div>
+        <!-- <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="card-title">
+                        <h1>Configure Network</h1>
+                    </div>
+                    <div class="card-text">
+                        <p>Select the attributes you want to use as filters</p>
+                        <table class="table table-striped h-50">
+                            <thead>
+                                <tr>
+                                    <th class="text-center col-md-1">S.No</th>
+                                    <th class="col-md-2">Attribute</th>
+                                    <th class="col-md-2">Unique Values</th>
+                                    <th class="col-md-3">Values</th>
+                                    <th class="col-md-2">Keep</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for(attribute of attributeListCurrent(); track $index){
+                                <tr>
+                                    <td class="text-center col-md-1">{{attribute['idx'] + 1}}</td>
+                                    <td class="col-md-2">{{attribute['name']}}</td>
+                                    <td class="col-md-2">{{attribute['count']}}</td>
+                                    <td class="col-md-3">
+                                        <select class="form-select" aria-label="Default select example">
+                                            <option selected>Values</option>
+                                            @for(value of attribute['values']; track $index){
+                                            <option value="{{value}}">{{value}}</option>
+                                            }
+                                        </select>
+                                    </td>
+                                    <td class="col-md-2">
+                                        <input type="checkbox" [(checked)]="attribute['keep']" (change)="onKeepChange($event, attribute['name'])" aria-label="Checkbox for following text input">
+                                    </td>
+                                </tr>
+                                }
+                            </tbody>
+                        </table>
+                        <div class="d-flex justify-content-between p-2">
+                            <ngb-pagination [collectionSize]="collectionSize()" [(page)]="page" [pageSize]="pageSize"
+                                (pageChange)="refreshPage()">
+                            </ngb-pagination>
+                        </div>
+                        <div class="mt-1" style="float: right">
+                            <button (click)="onClickNext()" class="mt-2" type="button" class="btn btn-primary">
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @if(errorMessage != ""){
+            <div class="card">
+                <div class="card-body">
+                    <p class="alert alert-danger">{{ errorMessage }}</p>
+                </div>
+            </div>
+            }
+        </div> -->
+    </div>
