@@ -11,4 +11,5 @@ urlpatterns = [
     path("get_graph_config/<str:session_id>",csrf_exempt(views.get_graph_config),name="get_graph_config"),
     path("set_graph_config/<str:session_id>",csrf_exempt(views.set_graph_config),name="set_graph_config"),
     path("get_sessions/",csrf_exempt(views.get_sessions),name="get_sessions"),
+    path("delete_session/<str:session_id>", csrf_exempt(views.delete_session), name="delete_session")
 ]

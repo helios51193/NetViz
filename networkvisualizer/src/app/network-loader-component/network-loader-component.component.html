@@ -19,7 +19,8 @@
                     </div>
                     <div class="form-group">
                       <label for="cytoFile">Upload Cyto File</label>
-                      <input type="file" class="form-control mt-1" id="cytoFile" (change)="onFileChange($event, 'cyto')" />
+                      <input type="file" class="form-control mt-1" id="cytoFile"
+                        (change)="onFileChange($event, 'cyto')" />
                     </div>
                     <div class="mt-1" style="float: right">
                       <button class="mt-2" type="submit" class="btn btn-primary">
@@ -39,7 +40,8 @@
                     </div>
                     <div class="form-group">
                       <label for="excelFile">Upload Excel File</label>
-                      <input type="file" class="form-control mt-1" id="excelFile" (change)="onFileChange($event, 'excel')" />
+                      <input type="file" class="form-control mt-1" id="excelFile"
+                        (change)="onFileChange($event, 'excel')" />
                     </div>
                     <div class="mt-2" style="float: right">
                       <button type="submit" class="btn btn-primary">
@@ -57,15 +59,25 @@
                       <label for="oldSession">Select prev sesison</label>
                       <select class="form-control mt-1" formControlName="session_id">
                         <option value="">--Select old session --</option>
-                          @for (session of sessions(); track $index) {
-                            <option value="{{ session['session_id'] }}">{{ session['session_name'] }}</option>
-                          }
+                        @for (session of sessions(); track $index) {
+                        <option value="{{ session['session_id'] }}">{{ session['session_name'] }}</option>
+                        }
                       </select>
                     </div>
-                    <div class="mt-2" style="float: right">
-                      <button type="submit" class="btn btn-primary">
-                        Select
-                      </button>
+                    <div class="mt-2 justify-content-end">
+                      <div class="row">
+                        <div class="col-md-8"></div>
+                        <div class="col-md-2" style="float: right;">
+                          <button type="button" class="btn btn-danger" (click)="onDeleteOldSession()">
+                            Delete
+                          </button>
+                        </div>
+                        <div class="col-md-2" style="float: right;">
+                          <button type="submit" class="btn btn-primary">
+                            Select
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </form>
                 </ng-template>

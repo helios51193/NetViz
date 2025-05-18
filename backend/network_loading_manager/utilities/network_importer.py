@@ -26,7 +26,7 @@ class NetworkImporter:
             return {"status":-1, "meessage":str(e)}
 
 
-    def import_network_excel(self):
+    def import_network_excel(self, file):
         
         try:
             if not file.name.endswith('.xlsx'):

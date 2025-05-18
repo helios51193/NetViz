@@ -80,9 +80,9 @@ class SessionManager:
         try:
             session = GraphSession.objects.get(session_id=session_id)
             session.delete()
-            return True
-        except ObjectDoesNotExist:
-            return False
+            return { "status":0, "message":"Session Deleted" }
+        except Exception as e:
+            return { "status":-1, "message":f"Error in deleting session {e}"}
     
     def get_all_sessions(self):
 
