@@ -1,5 +1,5 @@
 <div class="container-fluid">
-    <div class="row mt-5">
+    <div class="row">
         <div class="col-md-2">
             <div ngbAccordion>
                 <div ngbAccordionItem [collapsed]="false">
@@ -79,38 +79,35 @@
             </div> -->
         </div>
         <div class="col-md-8">
-            <div class="card">
-                <div class="card-body">
-                    <div class="card-title">
-                        <div class="row">
-                            <div class="col-md-11">
-                                <h1>Graph</h1>
-                            </div>
-                            <div class="col-md-1 mt-2 ">
-                                <button class="btn btn-outline-primary" (click)="onResetGraph()">Reset</button>
+            <ul ngbNav #nav="ngbNav" [(activeId)]="navActive" class="nav-tabs">
+                <li [ngbNavItem]="1">
+                    <button ngbNavLink>
+                        {{session_name()}}
+                    </button>
+                    <ng-template ngbNavContent>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="card-text">
+                                    <div class="graph" #graph id="graph"></div>
+                                </div>
                             </div>
                         </div>
-
-                    </div>
-                    <div class="card-text">
-                        <div #graph id="graph">
-
-                        </div>
-                    </div>
-                </div>
-            </div>
-            @if(legends().length > 0){
-                <div class="card card-body mt-1">
-                    <div class="card-text" id="legend">
-                        @for(legendItem of legends(); track $index){
-                            <button type="button" class="legend-item btn btn-outline-secondary" [ngClass]="{'highlighted': legendItem.selected}" (click)="selectLegend(legendItem.label)">
-                                <span class="legend-item-color" [style.backgroundColor]="legendItem.color"></span>
-                                <span class="legend-item-label">{{legendItem.label}}</span>
-                            </button>
+                        @if(legends().length > 0){
+                            <div class="card card-body mt-1">
+                                <div class="card-text" id="legend">
+                                    @for(legendItem of legends(); track $index){
+                                        <button type="button" class="legend-item btn btn-outline-secondary" [ngClass]="{'highlighted': legendItem.selected}" (click)="selectLegend(legendItem.label)">
+                                            <span class="legend-item-color" [style.backgroundColor]="legendItem.color"></span>
+                                            <span class="legend-item-label">{{legendItem.label}}</span>
+                                        </button>
+                                    }
+                                </div>
+                            </div>
                         }
-                    </div>
-                </div>
-            }
+                    </ng-template>
+                </li>
+            </ul>
+            <div [ngbNavOutlet]="nav" class="mt-2"></div>
         </div>
         <div class="col-md-2">
             <div class="card">

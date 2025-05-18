@@ -14,10 +14,11 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ModalSevice } from '../modal-sevice.service';
 import { PreferenceService } from '../preference.service';
 import { CommonModule } from '@angular/common';
+import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-network-view-component',
-  imports: [ReactiveFormsModule, FormsModule, NgbAccordionModule, CommonModule],
+  imports: [ReactiveFormsModule, FormsModule, NgbAccordionModule, CommonModule, NgbNavModule],
   templateUrl: './network-view-component.component.html',
   styleUrl: './network-view-component.component.css',
 })
@@ -30,10 +31,10 @@ export class NetworkViewComponentComponent {
   private modalBsService = inject(NgbModal);
   private modalService = inject(ModalSevice);
   private preferenceService = inject(PreferenceService);
+  
   @ViewChild('PreferencesModal') preferenceModalRef!: TemplateRef<any>;
   @ViewChild('CentralitiesModal') centralityModalRef!: TemplateRef<any>;
-
-  network_data: NetworkNodesEdges = { nodes: [], edges: [], node_properties: [], edge_properties: [], layout: {}, preferences: {} };
+  navActive = 1;
   session_id = this.activatedRoute.snapshot.params['session_id'];
   errorMessage: string = '';
   cy: any;
@@ -55,6 +56,7 @@ export class NetworkViewComponentComponent {
   colorByOptions = computed(() => { return this.graphService.colorOptions() });
   legends = computed(() => { return this.graphService.legends() });
   inspectorOptions = computed(() => { return this.preferenceService.inspectorOptions() });
+  session_name = signal<string>("");
   currentSizeOption = signal<string>("none");
   currentColorOption = signal<string>("none");
   selectedNode = computed(() => { return this.graphService.selectedNode() });
@@ -102,13 +104,14 @@ export class NetworkViewComponentComponent {
           return;
         }
         console.log(res);
-        this.network_data = res.payload;
-        this.preferenceService.setPreferences(this.network_data.preferences);
-        this.graphService.graph_data = this.network_data
+        this.session_name.set(res['payload']['session_name']);
+        this.graphService.graph_data = res['payload'];
+        this.preferenceService.setPreferences(this.graphService.graph_data.preferences);
+        
         this.graphService.generateSizeOptions();
         this.graphService.generateColorOptions();
-        this.preferenceService.generateInspectorOptions(this.network_data.node_properties);
-        this.setLayout(this.network_data['layout']);
+        this.preferenceService.generateInspectorOptions(this.graphService.graph_data.node_properties);
+        this.setLayout(this.graphService.graph_data['layout']);
         this.generateGraph();
       },
     });
@@ -118,7 +121,7 @@ export class NetworkViewComponentComponent {
     if (this.cy) {
       this.cy.destroy();
     }
-    const graphConfig = this.graphService.getGraphOptions("graph", this.network_data)
+    const graphConfig = this.graphService.getGraphOptions("graph");
     this.cy = cytoscape(graphConfig);
 
     this.cy.on('tap', 'node', (event: any) => {
@@ -141,8 +144,7 @@ export class NetworkViewComponentComponent {
           return;
         }
         console.log(res);
-        this.network_data = res.payload;
-        this.graphService.graph_data = this.network_data
+        this.graphService.graph_data = res['payload'];
         if (reset_style) {
           this.currentSizeOption.set("none");
           this.currentColorOption.set("none");

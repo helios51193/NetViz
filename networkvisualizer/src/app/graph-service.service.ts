@@ -20,7 +20,7 @@ export class GraphService {
   preferenceService = inject(PreferenceService);
   sizeOptions = signal<SizeOption[]>([]);
   colorOptions = signal<SizeOption[]>([]);
-  graph_data: NetworkNodesEdges | null = null;
+  graph_data: NetworkNodesEdges = {} as NetworkNodesEdges;
   sizeBy = signal<string>('none');
   colorBy = signal<string>('none');
   nodeMetrics = signal<NodeMetric>({}); // Add this fiel
@@ -131,11 +131,11 @@ export class GraphService {
   ];
   defaultColor = '#0074D9';
   defaultSize = 100;
-  public getGraphOptions(container_id: string, network_data: { nodes: any[]; edges: any[] }) {
+  public getGraphOptions(container_id: string) {
     const graphConfig = {
       container: document.getElementById(container_id),
       elements: [
-        ...network_data.nodes.map((node) => ({
+        ...this.graph_data.nodes.map((node) => ({
           data: {
             id: node.id,
           },
@@ -146,7 +146,7 @@ export class GraphService {
             }
             : undefined,
         })),
-        ...network_data.edges.map((edge) => ({
+        ...this.graph_data.edges.map((edge) => ({
           data: {
             id: `${edge.source}-${edge.target}`,
             source: edge.source,
