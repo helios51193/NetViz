@@ -81,8 +81,8 @@ class NetworkImporter:
                 "node_properties":[],
                 "edge_properties":[],
             }
-            node_properties = _analyze_node_properties(G)
-            edge_properties = _analyze_edge_properties(G) 
+            node_properties = self._analyze_node_properties(G)
+            edge_properties = self._analyze_edge_properties(G) 
             
             if node_properties['status'] == 1:
                 return {"status":1, "message":f"Error in analyzing node properties {node_properties['message']}" }
@@ -95,7 +95,7 @@ class NetworkImporter:
 
             return {"status":0, "message":"success", "payload":properties }
 
-        except:
+        except Exception as e:
             print(f"{traceback.format_exc()}")
             return {"status":1, "message":f"Error in extract_properties {e}" } 
     
@@ -123,7 +123,7 @@ class NetworkImporter:
                         missing = True
                 
                 if values:
-                    dtype = _infer_dtype(values)
+                    dtype = self._infer_dtype(values)
                     entry = {
                         "sno":index,
                         "name": attr,
@@ -150,6 +150,7 @@ class NetworkImporter:
         except Exception as e:
             print(f"{traceback.format_exc()}")
             return {"status":1, "message":f"Error in analyzing node properties {e}" }
+    
     def _infer_dtype(self, values):
         types = set(type(v) for v in values if v is not None)
         if len(types) == 1:
@@ -182,7 +183,7 @@ class NetworkImporter:
                         missing = True
 
                 if values:
-                    dtype = _infer_dtype(values)
+                    dtype = self._infer_dtype(values)
 
                     entry = {
                         "sno":index,
@@ -215,13 +216,13 @@ class NetworkImporter:
     def set_node_edge_properties(self, session, node_properties, edge_properties):
         try:
             for n_attribute in session.data['node_properties']:
-                if n_attribute['name'] in node_attributes:
+                if n_attribute['name'] in node_properties:
                     n_attribute['keep'] = True
                 else:
                     n_attribute['keep'] = False
 
             for e_attribute in session.data['edge_properties']:
-                if e_attribute['name'] in edge_attributes:
+                if e_attribute['name'] in edge_properties:
                     e_attribute['keep'] = True
                 else:
                     e_attribute['keep'] = False

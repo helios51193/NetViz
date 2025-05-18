@@ -271,10 +271,7 @@ def generate_position(G, layout):
     options = {}
     for option in layout['options']:
         options[option['name']] = option['value']
-
-    pprint("Current Layout")
-    pprint(layout)
-
+        
     if layout['name'] == "spring":
         positions = nx.spring_layout(G, 
         k=options.get('optimal_distance', 1.2), 
