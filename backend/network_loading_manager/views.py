@@ -3,7 +3,7 @@ import traceback
 from django.http import JsonResponse
 from django.shortcuts import render
 import uuid
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_GET
 from network_loading_manager.utilities.network_importer import NetworkImporter
 from networkvisualizer.utilities.session_manager import SessionManager
 
@@ -53,7 +53,7 @@ def load_excel(request):
         session_name = request.POST.get("name",None)
         print(res)
         if res['status'] == 1:
-            raise Exception("Invalid Cyto Graph")
+            raise Exception("Invalid File")
         
         data = {
             "graph":res['payload'],
@@ -167,3 +167,17 @@ def get_sessions(request):
                             "message":f"Error in getting sessions {e}", "payload":[] })
 
 
+@require_GET
+def delete_session(request, session_id):
+    try:
+        res = session_manager.delete_session(session_id)
+        if res['status']!= 0:
+            raise Exception(f"Error in deleting session {res['message']}")
+
+        return JsonResponse({"status":0,
+                            "message":"Session deleted",
+                            "payload":{}})
+    except Exception as e:
+        pprint(f"{traceback.format_exc()}")
+        return JsonResponse({"status":1,
+                            "message":f"Error in deleting session {e}", "payload":{} })
