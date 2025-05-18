@@ -27,6 +27,7 @@ export interface Edge{
 }
 
 export interface NetworkNodesEdges {
+    session_name:string,
     nodes:Node[]
     edges:Edge[],
     node_properties:NodeProperty[],

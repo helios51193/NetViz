@@ -72,6 +72,8 @@ def get_graph(request,session_id):
         if node_edge_list['status'] != 0:
             raise Exception("Error in generating node edge list")
         
+        node_edge_list['payload']['session_name'] = session.session_name
+        
         return JsonResponse({"status":0,
                             "message":"Graph generated",
                             "payload":node_edge_list['payload']})
