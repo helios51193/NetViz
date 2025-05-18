@@ -1,0 +1,226 @@
+<div class="container-fluid">
+    <div class="row mt-5">
+        <div class="col-md-2">
+            <div ngbAccordion>
+                <div ngbAccordionItem [collapsed]="false">
+                    <h2 ngbAccordionHeader>
+                        <button ngbAccordionButton>Layout</button>
+                    </h2>
+                    <div ngbAccordionCollapse>
+                        <div ngbAccordionBody>
+                            <ng-template>
+                                <div class="row">
+                                    <label class="col-md-4 col-form-label text-center">Layout</label>
+                                    <div class="col-md-8">
+                                        <select class="form-control mb-2 form-control-sm" (change)="onLayoutChange($event)">
+                                            @for(layout of networkLayouts(); track $index ){
+                                            <option [value]="layout.name" [selected]="currentLayout().name === layout.name">
+                                                {{layout.display_name}}</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                                @if(layoutFormGenerated() && currentLayout()){
+                                    @for (layoutOption of currentLayout()!.options; track $index){
+                                        <div class="row">
+                                            <label class="col-md-4 col-form-label text-center">{{layoutOption.display_name}}</label>
+                                            <div class="col-md-8">
+                                                <input type="number" class="form-control form-control-sm" [(ngModel)]="options[layoutOption.name]">
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                                <div class="form-group mt-2 text-end">
+                                    <button class="btn btn-primary btn-block btn-sm" (click)="onSubmitLayout()">Apply</button>
+                                </div>
+                            </ng-template>
+                        </div>
+                    </div>
+                </div>
+                <div ngbAccordionItem [collapsed]="false">
+                    <h2 ngbAccordionHeader>
+                        <button ngbAccordionButton>Style</button>
+                    </h2>
+                    <div ngbAccordionCollapse>
+                        <div ngbAccordionBody>
+                            <ng-template>
+                                <div class="row">
+                                    <label class="col-md-4 col-form-label text-center">Size By</label>
+                                    <div class="col-md-8">
+                                        <select class="form-control form-control-sm" [(ngModel)]="currentSizeOption">
+                                            @for (sizeOption of sizeByOptions();track $index){
+                                                <option [value]="sizeOption.name" [selected]="sizeByOptions.name == 'none'">{{sizeOption.display_name}}</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row mt-1">
+                                    <label class="col-md-4 col-form-label text-center">Color By </label>
+                                    <div class="col-md-8">
+                                        <select class="form-control form-control-sm" [(ngModel)]="currentColorOption">
+                                            @for (colorOption of colorByOptions();track $index){
+                                                <option [value]="colorOption.name">{{colorOption.display_name}}</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group mt-2 text-end">
+                                    <button class="btn btn-primary btn-block btn-sm" (click)="onSubmitStyle()">Apply</button>
+                                </div>
+                            </ng-template>  
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- <div class="card">
+                <div class="card-body">
+                    
+                </div>
+            </div> -->
+        </div>
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <div class="card-title">
+                        <div class="row">
+                            <div class="col-md-11">
+                                <h1>Graph</h1>
+                            </div>
+                            <div class="col-md-1 mt-2 ">
+                                <button class="btn btn-outline-primary" (click)="onResetGraph()">Reset</button>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="card-text">
+                        <div #graph id="graph">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @if(legends().length > 0){
+                <div class="card card-body mt-1">
+                    <div class="card-text" id="legend">
+                        @for(legendItem of legends(); track $index){
+                            <button type="button" class="legend-item btn btn-outline-secondary" [ngClass]="{'highlighted': legendItem.selected}" (click)="selectLegend(legendItem.label)">
+                                <span class="legend-item-color" [style.backgroundColor]="legendItem.color"></span>
+                                <span class="legend-item-label">{{legendItem.label}}</span>
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="col-md-2">
+            <div class="card">
+                <div class="card-body"> 
+                    <div class="card-title">
+                        <h3>Inspector</h3>
+                        <hr/>
+                    </div>    
+                    @if(selectedNode().id != ""){
+                        <table class="table table-striped">
+                            <tr>
+                                <td class="col-md-7">ID :</td>
+                                <td class="col-md-5">{{selectedNode().id}}</td>
+                            </tr>
+                            @for(nodeProperty of selectedNode().properties;track $index){
+                                <tr class="form-group">
+                                    <td class="col-md-7">{{nodeProperty.label}} :</td>
+                                    <td class="col-md-5">{{nodeProperty.value}}</td>
+                                </tr>
+                            }
+                        </table>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="preferencesModal" tabindex="-1" aria-labelledby="preferencesModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="preferencesModalLabel">Preferences</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Modal content goes here -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #CentralitiesModal let-modal>
+	<div class="modal-header">
+		<h4 class="modal-title">Centralities</h4>
+	</div>
+	<div class="modal-body">
+	</div>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-secondary" (click)="modal.close('Close click')">Close</button>
+        <button type="button" class="btn btn-primary" (click)="modal.close('Close click')">Save</button>
+	</div>
+</ng-template>
+<ng-template #PreferencesModal let-modal>
+	<div class="modal-header">
+		<h4 class="modal-title">Preferences</h4>
+		<!-- <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button> -->
+	</div>
+	<div class="modal-body">
+		<div class="Form-group">
+            <h5>Inspector fields (select up to 4) :</h5>
+            <div class="row">
+                @for(inspectorField of inspectorFieldKeys ; track inspectorFieldKeys ){
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <select class="form-control" id="{{inspectorField}}" [(ngModel)]="inspectorFields[inspectorField]">
+                                <option value="none">None</option>
+                                @for(inspectorOption of inspectorOptions();track $index){
+                                    <option [value]="inspectorOption">{{inspectorOption}}</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="form-group mt-1">
+            <h5>Graphs Defaults :</h5>
+            <div class="row">
+                <div class="col-2">
+                    <div class="form-group">
+                        <label>Node Color :</label>
+                        <div class="mt-1 align-middle">
+                            <input class="form-control form-control-sm" type="color" [value]="defaultColor" [(ngModel)]="defaultColor">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-2">
+                    <div class="form-group">
+                        <label>Edge Color :</label>
+                        <div class="mt-1 align-middle">
+                            <input class="form-control form-control-sm" type="color" [value]="defaultEdgeColor" [(ngModel)]="defaultEdgeColor">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-2">
+                    <div class="form-group">
+                        <label>Node Size :</label>
+                        <div class="mt-1">
+                            <input class="form-control form-control-sm" type="number" [(ngModel)]="defaultSize">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+	</div>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-secondary" (click)="modal.close('Close click')">Close</button>
+        <button type="button" class="btn btn-primary" (click)="savePreferences();modal.close('Close click')">Save</button>
+	</div>
+</ng-template>

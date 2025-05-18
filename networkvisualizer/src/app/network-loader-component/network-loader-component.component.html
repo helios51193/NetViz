@@ -1,0 +1,88 @@
+<div class="container-fluid">
+  <div class="row mt-5">
+    <div class="col-md-4"></div>
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <div class="card-title">
+            <h1>Upload Network File</h1>
+          </div>
+          <div class="card-text">
+            <ul ngbNav #nav="ngbNav" [(activeId)]="active" class="nav-tabs">
+              <li [ngbNavItem]="1">
+                <button ngbNavLink>Upload Cyto</button>
+                <ng-template ngbNavContent>
+                  <form [formGroup]="cytoForm" (ngSubmit)="onSubmitCyto()">
+                    <div class="form-group">
+                      <label for="name">Session Name</label>
+                      <input type="text" class="form-control mt-1" formControlName="name" />
+                    </div>
+                    <div class="form-group">
+                      <label for="cytoFile">Upload Cyto File</label>
+                      <input type="file" class="form-control mt-1" id="cytoFile" (change)="onFileChange($event, 'cyto')" />
+                    </div>
+                    <div class="mt-1" style="float: right">
+                      <button class="mt-2" type="submit" class="btn btn-primary">
+                        Upload
+                      </button>
+                    </div>
+                  </form>
+                </ng-template>
+              </li>
+              <li [ngbNavItem]="2">
+                <button ngbNavLink>Upload Excel</button>
+                <ng-template ngbNavContent>
+                  <form [formGroup]="excelForm" (ngSubmit)="onSubmitExcel()">
+                    <div class="form-group">
+                      <label for="name">Session Name</label>
+                      <input type="text" class="form-control mt-1" formControlName="name" />
+                    </div>
+                    <div class="form-group">
+                      <label for="excelFile">Upload Excel File</label>
+                      <input type="file" class="form-control mt-1" id="excelFile" (change)="onFileChange($event, 'excel')" />
+                    </div>
+                    <div class="mt-2" style="float: right">
+                      <button type="submit" class="btn btn-primary">
+                        Upload
+                      </button>
+                    </div>
+                  </form>
+                </ng-template>
+              </li>
+              <li [ngbNavItem]="3">
+                <button ngbNavLink>Old Session</button>
+                <ng-template ngbNavContent>
+                  <form [formGroup]="oldSessionForm" (ngSubmit)="onSubmitOldSession()">
+                    <div class="form-group">
+                      <label for="oldSession">Select prev sesison</label>
+                      <select class="form-control mt-1" formControlName="session_id">
+                        <option value="">--Select old session --</option>
+                          @for (session of sessions(); track $index) {
+                            <option value="{{ session['session_id'] }}">{{ session['session_name'] }}</option>
+                          }
+                      </select>
+                    </div>
+                    <div class="mt-2" style="float: right">
+                      <button type="submit" class="btn btn-primary">
+                        Select
+                      </button>
+                    </div>
+                  </form>
+                </ng-template>
+              </li>
+            </ul>
+            <div [ngbNavOutlet]="nav" class="mt-2"></div>
+          </div>
+        </div>
+      </div>
+      @if(errorMessage != ""){
+      <div class="card">
+        <div class="card-body">
+          <p class="alert alert-danger">{{ errorMessage }}</p>
+        </div>
+      </div>
+      }
+    </div>
+    <div class="col-md-4"></div>
+  </div>
+</div>

@@ -1,0 +1,76 @@
+import { HttpClient } from '@angular/common/http';
+import { ResourceLoader } from '@angular/compiler';
+import { inject, Injectable, signal } from '@angular/core';
+import { catchError, observable, throwError } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class NetworkService {
+
+  baseUrl = 'http://localhost:8000/';
+  uploadCytoApi = this.baseUrl + 'loader/upload_cyto';
+  uploadExcelApi = this.baseUrl + 'loader/upload_excel';
+  getGraphConfigApi = this.baseUrl + 'loader/get_graph_config';
+  setGraphConfigApi = this.baseUrl + 'loader/set_graph_config';
+  getGraphApi = this.baseUrl + 'graph/get_graph';
+  getSessionApi = this.baseUrl + 'loader/get_sessions';
+  getBasicInfoApi = this.baseUrl + 'graph/get_basic_info';
+  getLayoutApi = this.baseUrl + 'graph/get_layout_options';
+  setLayoutApi = this.baseUrl + 'graph/set_layout';
+  getNodeMetricsApi = this.baseUrl + 'graph/get_all_node_metrics';
+  setPreferencedApi = this.baseUrl + 'graph/set_preferences';
+
+  httpClient = inject(HttpClient);
+  network_meta_data = signal<any>({});
+  network_node_properties = signal<any>([]);
+  network_edge_properties = signal<any>([]);
+  current_session = signal<{ session_id:string, session_name:string}>({session_id:'',session_name:''});
+  layout_options = signal<{name:string, display_name:string, options:any}[]>([]);
+  
+  setGraphConfig(session_id:string,graphConfig:FormData){
+    return this.callPost(this.setGraphConfigApi + "/" + session_id,graphConfig);
+  }
+  getGraph(session_id:string){
+    return this.callGet(this.getGraphApi + "/" + session_id);
+  }
+
+  updateLayout(session_id:string,formData:FormData){
+    return this.callPost(this.setLayoutApi + "/" + session_id,formData);
+  }
+
+  getSession(){
+    return this.callGet(this.getSessionApi);
+  }
+
+  getGraphConfig(session_id:string){
+    return this.callGet(this.getGraphConfigApi + "/" + session_id);
+  }
+  
+  uploadCyto(formData:FormData){
+    return this.callPost(this.uploadCytoApi,formData);
+  }
+  uploadExcel(formData:FormData){
+    return this.callPost(this.uploadExcelApi,formData);
+  }
+
+  getBasicInfo(session_id:string, node_id:string){
+    return this.callGet(this.getBasicInfoApi + "/" + session_id + "/" + node_id);
+  }
+  getLayoutOptions(){
+    return this.callGet(this.getLayoutApi);
+  }
+  getNodeMetrics(session_id:string, formData:FormData){
+    return this.callPost(this.getNodeMetricsApi + "/" + session_id, formData);
+  }
+  setPreferences(session_id:string, formData:FormData){
+    return this.callPost(this.setPreferencedApi + "/" + session_id, formData);
+  }
+  callPost(url:string,formData:FormData){
+    return this.httpClient.post(url,formData);
+  }
+  callGet(url:string){
+    return this.httpClient.get(url);
+  }
+
+}
