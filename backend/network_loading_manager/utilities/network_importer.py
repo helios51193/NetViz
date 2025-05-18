@@ -14,16 +14,15 @@ class NetworkImporter:
 
     def import_network_cyto(self, file):
         try:
-
-            g = json.load(open(file,"r"))
+            g = json.load(file)
             if "graph" in g:
                 g = g["graph"]
             
             G = nx.cytoscape_graph(g)
             
-            return {"status":0, "message":"Network imported successfully"}
+            return {"status":0, "message":"Network imported successfully", "payload":G}
         except Exception as e:
-            return {"status":-1, "meessage":str(e)}
+            return {"status":-1, "message":str(e)}
 
 
     def import_network_excel(self, file):

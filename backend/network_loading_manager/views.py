@@ -24,7 +24,7 @@ def load_cyto_json(request):
         res = network_importer.import_network_cyto(cyto_graph)
         session_name = request.POST.get("name",None)
 
-        if res['status'] == 1:
+        if res['status'] != 0:
             raise Exception("Invalid Cyto Graph")
         data = {
             "graph":res['payload'],

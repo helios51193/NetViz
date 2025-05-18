@@ -66,21 +66,7 @@ def get_graph(request,session_id):
             raise Exception("Session not found")
         
         session = session['payload']
-        if "layout" in session.data:
-            layout = session.data['layout']
-        else:
-            session.data['layout'] = {
-                "name":"random", 
-                'display_name':'Random',
-                "options":[{
-                    "name":"seed",
-                    "display_name":"Seed",
-                    "value":42,
-                    "type":"integer"
-                }]
-            }
-            session_manager.update_session(session_id=session_id, new_data=session.data)
-    
+            
         node_edge_list = generate_node_edge_list(session.data)
         
         if node_edge_list['status'] != 0:

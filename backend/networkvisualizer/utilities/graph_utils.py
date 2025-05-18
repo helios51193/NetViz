@@ -220,14 +220,14 @@ def generate_node_edge_list(session_data):
     if 'graph' not in session_data.keys():
         return {"status":1, "message":"No graph found in session data"}
 
-    layout = session_data['layout']
-    
+    layout = session_data.get('layout', {})
+  
     result = {
         "nodes":[],
         "edges":[],
     }
     positions = None
-    positions = generate_position(session_data['graph'], layout)
+    positions, layout = generate_position(session_data['graph'], layout)
     
     # Creating node List
     node_attributes_to_keep = [x['name'] for x in session_data['node_properties'] if x['keep'] == True]
@@ -261,13 +261,24 @@ def generate_node_edge_list(session_data):
         result['node_properties'] = session_data['node_properties']
         result['edge_properties'] = session_data['edge_properties']
         result['layout'] = layout
-        result['preferences'] = session_data.get('preferences')
+        result['preferences'] = session_data.get('preferences',{})
     
     return {"status":0, "message":"success", "payload":result}
 
 
 def generate_position(G, layout):
 
+    
+    if layout == {}:
+        layout = {
+            "name":"random",
+             "options":[{
+                "name":"seed",
+                "display_name":"Seed",
+                "value":42,
+            }]
+        }
+    
     options = {}
     for option in layout['options']:
         options[option['name']] = option['value']
@@ -295,7 +306,7 @@ def generate_position(G, layout):
         positions = nx.random_layout(G, seed=options.get('seed', 42))
 
     positions = { k: [float(coord) for coord in v] for k, v in positions.items()}
-    return positions
+    return positions, layout
 
 
 def extract_layout_options(request):
