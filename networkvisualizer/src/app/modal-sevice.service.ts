@@ -11,10 +11,16 @@ export class ModalSevice {
   private centrailtiesModal = new Subject<void>();
   openCentralitiesModal$ = this.centrailtiesModal.asObservable();
 
+  private valuesListModal = new Subject<void>();
+  openValuesListModal$ = this.valuesListModal.asObservable();
+
   triggerOpenPreferenceModal() {
     this.preferenceModal.next();
   }
   triggerOpenCentrailtiesModal(){
     this.centrailtiesModal.next();
+  }
+  triggerOpenValuesListModal(){
+    this.valuesListModal.next();
   }
 }

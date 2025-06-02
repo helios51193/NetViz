@@ -66,11 +66,11 @@ export class NetworkViewComponentComponent {
   ngOnInit() {
 
     this.initialize_graph_and_settings();
-    this.modalService.openPreferenceModal$.subscribe(() => {
+    const preferenceSub =  this.modalService.openPreferenceModal$.subscribe(() => {
       this.initializePreferenceModalValues();
       this.modalBsService.open(this.preferenceModalRef, { size: 'lg', centered:true, backdrop:'static' });
     });
-    this.modalService.openCentralitiesModal$.subscribe(() => {
+    const centralitiesSub = this.modalService.openCentralitiesModal$.subscribe(() => {
       this.initializeCentralityModalValues();
       this.modalBsService.open(this.centralityModalRef, { size: 'lg', centered:true, backdrop:'static' });
     })
@@ -92,6 +92,8 @@ export class NetworkViewComponentComponent {
     });
     this.destroyRef.onDestroy(() => {
       layout_subscription.unsubscribe();
+      preferenceSub.unsubscribe();
+      centralitiesSub.unsubscribe();
     });
     
   }
