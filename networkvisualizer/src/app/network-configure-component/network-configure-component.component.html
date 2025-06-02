@@ -37,10 +37,9 @@
                                     <th class="col-md-2">Attribute</th>
                                     <th class="col-md-2">Present in All ?</th>
                                     <th class="col-md-1">Type</th>
-                                    <th class="col-md-2">Unique Values</th>
-                                    <th class="col-md-1">Min</th>
-                                    <th class="col-md-1">Max</th>
-                                    <th class="col-md-1"> Keep </th>
+                                    <th class="col-md-2 text-center">Unique Values</th>
+                                    <th class="col-md-1 text-center">Min</th>
+                                    <th class="col-md-1 text-center">Max</th>
 
                                 </tr>
                             </thead>
@@ -61,13 +60,13 @@
                                         "mixed"
                                         }}
                                     </td>
-                                    <td class="col-md-2">
-                                        <select class="form-control">
-                                            @for( value of node_property['unique_values'];track $index){
-                                            <option value="{{value}}">{{value}}</option>
-                                            }
-                                            <option selected>Values</option>
-                                        </select>
+                                    <td class="col-md-2 text-center">
+                                        @if(node_property['unique_values']?.length > 0){
+                                            <button type="button" class="btn btn-primary btn-sm" (click)="onShowUniqueValues(node_property['name'], node_property['unique_values'])">View Values</button>             
+                                        }
+                                        @else {
+                                            <span>N.A.</span>
+                                        }
                                     </td>
                                     <td class="col-md-1 text-center">{{
                                         node_property['min'] ? node_property['min'] : "N.A."
@@ -75,11 +74,6 @@
                                     <td class="col-md-1 text-center">{{
                                         node_property['max'] ? node_property['max'] : "N.A."
                                         }}</td>
-                                    <td class="col-md-1 text-center">
-                                        <input type="checkbox" [(checked)]="node_property['keep']"
-                                            (change)="onKeepChangeNode($event, node_property['name'])"
-                                            aria-label="Checkbox for following text input">
-                                    </td>
                                 </tr>
                                 }
                             </tbody>
@@ -102,11 +96,9 @@
                                     <th class="col-md-2">Attribute</th>
                                     <th class="col-md-2">Present in All ?</th>
                                     <th class="col-md-1">Type</th>
-                                    <th class="col-md-2">Unique Values</th>
-                                    <th class="col-md-1">Min</th>
-                                    <th class="col-md-1">Max</th>
-                                    <th class="col-md-1"> Keep </th>
-
+                                    <th class="col-md-2 text-center">Unique Values</th>
+                                    <th class="col-md-1 text-center">Min</th>
+                                    <th class="col-md-1 text-center">Max</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -126,13 +118,13 @@
                                         "mixed"
                                         }}
                                     </td>
-                                    <td class="col-md-2">
-                                        <select class="form-control">
-                                            @for( value of edge_property['unique_values'];track $index){
-                                            <option value="{{value}}">{{value}}</option>
-                                            }
-                                            <option selected>Values</option>
-                                        </select>
+                                    <td class="col-md-2 text-center">
+                                        @if(edge_property['unique_values']?.length > 0){
+                                            <button type="button" class="btn btn-primary btn-sm" (click)="onShowUniqueValues(edge_property['name'], edge_property['unique_values'])">View Values</button>
+                                        }@else {
+                                            <span> N.A. </span>
+                                        }
+                                        
                                     </td>
                                     <td class="col-md-1 text-center">{{
                                         edge_property['min'] ? edge_property['min'] : "N.A."
@@ -140,11 +132,6 @@
                                     <td class="col-md-1 text-center">{{
                                         edge_property['max'] ? edge_property['max'] : "N.A."
                                         }}</td>
-                                    <td class="col-md-1 text-center">
-                                        <input type="checkbox" [(checked)]="edge_property['keep']"
-                                            (change)="onKeepChangeEdge($event, edge_property['name'])"
-                                            aria-label="Checkbox for following text input">
-                                    </td>
                                 </tr>
                                 }
                             </tbody>
@@ -170,64 +157,21 @@
                 </div>
             }
         </div>
-        <!-- <div class="col-md-4">
-            <div class="card">
-                <div class="card-body">
-                    <div class="card-title">
-                        <h1>Configure Network</h1>
-                    </div>
-                    <div class="card-text">
-                        <p>Select the attributes you want to use as filters</p>
-                        <table class="table table-striped h-50">
-                            <thead>
-                                <tr>
-                                    <th class="text-center col-md-1">S.No</th>
-                                    <th class="col-md-2">Attribute</th>
-                                    <th class="col-md-2">Unique Values</th>
-                                    <th class="col-md-3">Values</th>
-                                    <th class="col-md-2">Keep</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @for(attribute of attributeListCurrent(); track $index){
-                                <tr>
-                                    <td class="text-center col-md-1">{{attribute['idx'] + 1}}</td>
-                                    <td class="col-md-2">{{attribute['name']}}</td>
-                                    <td class="col-md-2">{{attribute['count']}}</td>
-                                    <td class="col-md-3">
-                                        <select class="form-select" aria-label="Default select example">
-                                            <option selected>Values</option>
-                                            @for(value of attribute['values']; track $index){
-                                            <option value="{{value}}">{{value}}</option>
-                                            }
-                                        </select>
-                                    </td>
-                                    <td class="col-md-2">
-                                        <input type="checkbox" [(checked)]="attribute['keep']" (change)="onKeepChange($event, attribute['name'])" aria-label="Checkbox for following text input">
-                                    </td>
-                                </tr>
-                                }
-                            </tbody>
-                        </table>
-                        <div class="d-flex justify-content-between p-2">
-                            <ngb-pagination [collectionSize]="collectionSize()" [(page)]="page" [pageSize]="pageSize"
-                                (pageChange)="refreshPage()">
-                            </ngb-pagination>
-                        </div>
-                        <div class="mt-1" style="float: right">
-                            <button (click)="onClickNext()" class="mt-2" type="button" class="btn btn-primary">
-                                Next
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            @if(errorMessage != ""){
-            <div class="card">
-                <div class="card-body">
-                    <p class="alert alert-danger">{{ errorMessage }}</p>
-                </div>
-            </div>
-            }
-        </div> -->
     </div>
+    <ng-template #ValuesListModal let-modal>
+        <div class="modal-header">
+            <h4 class="modal-title">Unique values : {{property_name()}}</h4>
+            <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+        </div>
+        <div class="modal-body">
+            <ul class="list-group list-group-horizontal d-flex flex-wrap">
+                @for(property_value of property_values();track $index){
+                    <li class="list-group-item">{{property_value}}</li>
+                }
+            </ul>
+           
+        </div>
+        <div class="modal-footer">
+        </div>
+    </ng-template>
+    

@@ -5,12 +5,15 @@ import {
   inject,
   input,
   signal,
+  TemplateRef,
+  ViewChild,
 } from '@angular/core';
 import { NetworkService } from '../network-service.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NgbPagination } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule } from '@angular/forms';
 import { JsonPipe } from '@angular/common';
+import { ModalSevice } from '../modal-sevice.service';
 
 @Component({
   selector: 'app-network-configure-component',
@@ -23,6 +26,9 @@ export class NetworkConfigureComponentComponent {
   private activatedRoute = inject(ActivatedRoute);
   private destroyRef = inject(DestroyRef);
   private router = inject(Router);
+  private modalService = inject(ModalSevice);
+  private modalBsService = inject(NgbModal);
+  @ViewChild('ValuesListModal') valuesListModal!: TemplateRef<any>;
   session_id = this.activatedRoute.snapshot.params['session_id'];
   errorMessage: string = '';
   
@@ -38,6 +44,8 @@ export class NetworkConfigureComponentComponent {
   edge_page_size = 3;
   node_properties_current = signal<any[]>([]);
   edge_properties_current = signal<any[]>([]);
+  property_name = signal<string>('');
+  property_values = signal<string[]>([]);
   collectionSizeNode = computed(() => this.networkService.network_node_properties().length);
   collectionSizeEdge = computed(() => this.networkService.network_edge_properties().length);
 
@@ -85,8 +93,16 @@ export class NetworkConfigureComponentComponent {
         this.refreshPageEdge();
       },
     });
+
+    const valuesListSub = this.modalService.openValuesListModal$.subscribe({
+      next:(res:any) =>{
+        this.modalBsService.open(this.valuesListModal, { size: 'lg', centered:true, backdrop:'static' });
+      }
+    });
+
     this.destroyRef.onDestroy(() => {
       sub.unsubscribe();
+      valuesListSub.unsubscribe();
     });
   }
 
@@ -153,4 +169,12 @@ export class NetworkConfigureComponentComponent {
       sub.unsubscribe();
     })
   }
+
+  onShowUniqueValues(property_name:string, property_values:string[]){
+    this.property_name.set(property_name);
+    this.property_values.set(property_values);
+    this.modalService.triggerOpenValuesListModal();
+  }
+
+
 }
