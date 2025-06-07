@@ -26,6 +26,22 @@ export interface Edge{
     };
 }
 
+
+
+export interface GraphStyle {
+    show_edges:boolean,
+    show_nodes:boolean,
+    node_shape:"ellipse" | "triangle" | "rectangle" | "star" | "pentagon" | "heptagon" | "octagon",
+    node_width:number,
+    node_height:number,
+    node_color:string,
+    border_width:number,
+    border_color:string,
+    edge_color:string,
+    edge_style: "solid" | "dashed" | "dotted",
+    edge_width:number,
+}
+
 export interface NetworkNodesEdges {
     session_name:string,
     nodes:Node[]
@@ -78,10 +94,7 @@ export interface InspectorFields{
 }
 
 export interface Preferences {
-     inspector_fields?: string[];
-     default_color?: string;
-     default_edge_color?: string;
-     default_size?: number;
+     graph_style?: GraphStyle,
 }
 
 export interface NodeInfo {

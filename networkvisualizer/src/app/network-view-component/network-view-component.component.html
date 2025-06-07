@@ -44,26 +44,107 @@
                     <div ngbAccordionCollapse>
                         <div ngbAccordionBody>
                             <ng-template>
-                                <div class="row">
-                                    <label class="col-md-4 col-form-label text-center">Size By</label>
-                                    <div class="col-md-8">
-                                        <select class="form-control form-control-sm" [(ngModel)]="currentSizeOption">
-                                            @for (sizeOption of sizeByOptions();track $index){
-                                                <option [value]="sizeOption.name" [selected]="sizeByOptions.name == 'none'">{{sizeOption.display_name}}</option>
-                                            }
+                                <div class="row mt-1">
+                                    <div class="col-md-6">
+                                        <label>Show Nodes:</label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="checkbox" class="form-check-input" [(ngModel)]="graphStyle.show_nodes">
+                                    </div>
+                                </div>
+                                <div class="row mt-1">
+                                    <div class="col-md-6">
+                                        <label>Node Width :</label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="number" class="form-control form-control-sm" [(ngModel)]="graphStyle.node_width" min="50" max="500">
+                                    </div>
+                                </div>
+                                <div class="row mt-1">
+                                    <div class="col-md-6">
+                                        <label>Node Height :</label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="number" class="form-control form-control-sm" [(ngModel)]="graphStyle.node_height" min="50" max="500">
+                                    </div>
+                                </div>
+                                <div class="row mt-1">
+                                    <div class="col-md-6">
+                                        <label>Node Shape :</label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <select class="form-control form-control-sm" [(ngModel)]="graphStyle.node_shape">
+                                            <option value="ellipse">Ellipse</option>
+                                            <option value="triangle">Triangle</option>
+                                            <option value="rectangle">Rectangle</option>
+                                            <option value="pentagon">Pentagon</option>
+                                            <option value="heptagon">Peptagon</option>
+                                            <option value="octagon">Octagon</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="row mt-1">
-                                    <label class="col-md-4 col-form-label text-center">Color By </label>
-                                    <div class="col-md-8">
-                                        <select class="form-control form-control-sm" [(ngModel)]="currentColorOption">
-                                            @for (colorOption of colorByOptions();track $index){
-                                                <option [value]="colorOption.name">{{colorOption.display_name}}</option>
-                                            }
+                                    <div class="col-md-6">
+                                        <label>Node Color :</label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="color" class="form-control form-control-sm" [(ngModel)]="graphStyle.node_color">
+                                    </div>
+                                </div>
+                                <div class="row mt-1">
+                                    <div class="col-md-6">
+                                        <label>Border Width :</label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="number" class="form-control form-control-sm" [(ngModel)]="graphStyle.border_width" min="1" max="10">
+                                    </div>
+                                </div>
+                                <div class="row mt-1">
+                                    <div class="col-md-6">
+                                        <label>Border Color :</label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="color" class="form-control form-control-sm" [(ngModel)]="graphStyle.border_color">
+                                    </div>
+                                </div>
+                                <hr/>
+                                <div class="row mt-1">
+                                    <div class="col-md-6">
+                                        <label>Show Edges:</label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="checkbox" class="form-check-input" [(ngModel)]="graphStyle.show_edges">
+                                    </div>
+                                </div>
+                                <div class="row mt-1">
+                                    <div class="col-md-6">
+                                        <label>Edge Width :</label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="number" class="form-control form-control-sm" [(ngModel)]="graphStyle.edge_width" min="1" max="5">
+                                    </div>
+                                </div>
+                                <div class="row mt-1">
+                                    <div class="col-md-6">
+                                        <label>Edge Color :</label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="color" class="form-control form-control-sm" [(ngModel)]="graphStyle.edge_color">
+                                    </div>
+                                </div>
+                                <div class="row mt-1">
+                                    <div class="col-md-6">
+                                        <label>Edge Style :</label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <select class="form-control form-control-sm" [(ngModel)]="graphStyle.edge_style">
+                                            <option value="solid">Solid</option>
+                                            <option value="dotted">Dotted</option>
+                                            <option value="dashed">Dashed</option>
                                         </select>
                                     </div>
                                 </div>
+                                
                                 <div class="form-group mt-2 text-end">
                                     <button class="btn btn-primary btn-block btn-sm" (click)="onSubmitStyle()">Apply</button>
                                 </div>
@@ -72,11 +153,6 @@
                     </div>
                 </div>
             </div>
-            <!-- <div class="card">
-                <div class="card-body">
-                    
-                </div>
-            </div> -->
         </div>
         <div class="col-md-8">
             <ul ngbNav #nav="ngbNav" [(activeId)]="navActive" class="nav-tabs">
@@ -152,72 +228,3 @@
     </div>
   </div>
 </div>
-<ng-template #CentralitiesModal let-modal>
-	<div class="modal-header">
-		<h4 class="modal-title">Centralities</h4>
-	</div>
-	<div class="modal-body">
-	</div>
-	<div class="modal-footer">
-		<button type="button" class="btn btn-secondary" (click)="modal.close('Close click')">Close</button>
-        <button type="button" class="btn btn-primary" (click)="modal.close('Close click')">Save</button>
-	</div>
-</ng-template>
-<ng-template #PreferencesModal let-modal>
-	<div class="modal-header">
-		<h4 class="modal-title">Preferences</h4>
-		<!-- <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button> -->
-	</div>
-	<div class="modal-body">
-		<div class="Form-group">
-            <h5>Inspector fields (select up to 4) :</h5>
-            <div class="row">
-                @for(inspectorField of inspectorFieldKeys ; track inspectorFieldKeys ){
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <select class="form-control" id="{{inspectorField}}" [(ngModel)]="inspectorFields[inspectorField]">
-                                <option value="none">None</option>
-                                @for(inspectorOption of inspectorOptions();track $index){
-                                    <option [value]="inspectorOption">{{inspectorOption}}</option>
-                                }
-                            </select>
-                        </div>
-                    </div>
-                }
-            </div>
-        </div>
-        <div class="form-group mt-1">
-            <h5>Graphs Defaults :</h5>
-            <div class="row">
-                <div class="col-2">
-                    <div class="form-group">
-                        <label>Node Color :</label>
-                        <div class="mt-1 align-middle">
-                            <input class="form-control form-control-sm" type="color" [value]="defaultColor" [(ngModel)]="defaultColor">
-                        </div>
-                    </div>
-                </div>
-                <div class="col-2">
-                    <div class="form-group">
-                        <label>Edge Color :</label>
-                        <div class="mt-1 align-middle">
-                            <input class="form-control form-control-sm" type="color" [value]="defaultEdgeColor" [(ngModel)]="defaultEdgeColor">
-                        </div>
-                    </div>
-                </div>
-                <div class="col-2">
-                    <div class="form-group">
-                        <label>Node Size :</label>
-                        <div class="mt-1">
-                            <input class="form-control form-control-sm" type="number" [(ngModel)]="defaultSize">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-	</div>
-	<div class="modal-footer">
-		<button type="button" class="btn btn-secondary" (click)="modal.close('Close click')">Close</button>
-        <button type="button" class="btn btn-primary" (click)="savePreferences();modal.close('Close click')">Save</button>
-	</div>
-</ng-template>

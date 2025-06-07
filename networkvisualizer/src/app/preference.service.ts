@@ -16,25 +16,4 @@ export class PreferenceService {
   generateInspectorOptions(nodeProperties:NodeProperty[]){
     this.inspectorOptions.set(nodeProperties.map((property)=>property.name));
   }
-  setPreferences(preferences:Preferences){
-    if ('inspector_fields' in preferences){
-      const inspector_fields:string[] = preferences['inspector_fields'] || []
-      for (var i = 0;i< Object.keys(this.inspectorFields).length;i++){
-        console.log(inspector_fields[i]);
-        if (inspector_fields[i] == undefined){
-          inspector_fields[i] = "none";
-        }
-        this.inspectorFields[`field${i+1}`] = inspector_fields[i];
-      }
-    }
-    if ('default_color' in preferences){
-      this.defaultColor.set(preferences['default_color'] || "#0074D9");
-    }
-    if ('default_size' in preferences){
-      this.defaultSize.set(preferences['default_size'] || 70);
-    }
-    if ('default_edge_color' in preferences){
-      this.defaultEdgeColor.set(preferences['default_edge_color'] || "#888888");
-    }
-  }
 }
