@@ -32,7 +32,6 @@ export class NetworkViewComponentComponent {
   private modalService = inject(ModalSevice);
   private preferenceService = inject(PreferenceService);
   
-  @ViewChild('PreferencesModal') preferenceModalRef!: TemplateRef<any>;
   @ViewChild('CentralitiesModal') centralityModalRef!: TemplateRef<any>;
   navActive = 1;
   session_id = this.activatedRoute.snapshot.params['session_id'];
@@ -60,16 +59,13 @@ export class NetworkViewComponentComponent {
   currentSizeOption = signal<string>("none");
   currentColorOption = signal<string>("none");
   selectedNode = computed(() => { return this.graphService.selectedNode() });
-  defaultColor = signal<string>("#0074D9");
-  defaultEdgeColor = signal<string>("#888888");
-  defaultSize = signal<number>(70);
+  graphStyle = this.graphService.graphStyle;
+  
+  
   ngOnInit() {
 
     this.initialize_graph_and_settings();
-    const preferenceSub =  this.modalService.openPreferenceModal$.subscribe(() => {
-      this.initializePreferenceModalValues();
-      this.modalBsService.open(this.preferenceModalRef, { size: 'lg', centered:true, backdrop:'static' });
-    });
+    
     const centralitiesSub = this.modalService.openCentralitiesModal$.subscribe(() => {
       this.initializeCentralityModalValues();
       this.modalBsService.open(this.centralityModalRef, { size: 'lg', centered:true, backdrop:'static' });
@@ -92,7 +88,6 @@ export class NetworkViewComponentComponent {
     });
     this.destroyRef.onDestroy(() => {
       layout_subscription.unsubscribe();
-      preferenceSub.unsubscribe();
       centralitiesSub.unsubscribe();
     });
     
@@ -108,11 +103,10 @@ export class NetworkViewComponentComponent {
         console.log(res);
         this.session_name.set(res['payload']['session_name']);
         this.graphService.graph_data = res['payload'];
-        this.preferenceService.setPreferences(this.graphService.graph_data.preferences);
-        
         this.graphService.generateSizeOptions();
         this.graphService.generateColorOptions();
-        this.preferenceService.generateInspectorOptions(this.graphService.graph_data.node_properties);
+        this.graphService.setGraphStyles(res['payload']['preferences']);
+        this.graphStyle = this.graphService.graphStyle;
         this.setLayout(this.graphService.graph_data['layout']);
         this.generateGraph();
       },
@@ -123,7 +117,7 @@ export class NetworkViewComponentComponent {
     if (this.cy) {
       this.cy.destroy();
     }
-    const graphConfig = this.graphService.getGraphOptions("graph");
+    const graphConfig = this.graphService.getGraphConfig("graph");
     this.cy = cytoscape(graphConfig);
 
     this.cy.on('tap', 'node', (event: any) => {
@@ -161,8 +155,11 @@ export class NetworkViewComponentComponent {
 
 
 
-  onLayoutChange(event: Event) {
 
+  onLayoutChange(event: Event) {
+    /*
+      Change the options in the form based on the selected layout
+     */
     const selectElement = event.target as HTMLSelectElement;
     const selectedLayoutName = selectElement.value;
 
@@ -176,6 +173,9 @@ export class NetworkViewComponentComponent {
     }
   }
   setLayout(layout:Layout | {}){
+    /*
+      Used for initializing the layout from the api response
+     */
     this.layoutFormGenerated.set(false);
     this.currentLayout.set(layout as Layout);
     this.options = {};
@@ -184,6 +184,10 @@ export class NetworkViewComponentComponent {
   }
 
   onSubmitLayout() {
+    /*
+      Call the api to get the positions of nodes based on the layout information
+      and update the graph display
+     */
     const formData = new FormData();
 
     const layout = this.currentLayout()!.name;
@@ -210,60 +214,24 @@ export class NetworkViewComponentComponent {
 
   onSubmitStyle() {
 
-    this.graphService.resetSelectedNode(this.cy);
-
-    this.graphService.colorBy.set(this.currentColorOption());
-    this.graphService.sizeBy.set(this.currentSizeOption());
-    if (this.currentSizeOption() != "none") {
-      const formData = new FormData();
-      formData.append('metrics', this.currentSizeOption() || '');
-      this.networkService.getNodeMetrics(this.session_id, formData).subscribe({
-        next: (res: any) => {
-          if (res.status != 0) {
-            this.errorMessage = res.message;
-            return;
-          }
-          console.log(res);
-          this.graphService.nodeMetrics.set(res.payload['metrics']);
-          this.updateGraph(false);
-        },
-      });
-    }
-    else {
-      this.updateGraph(false);
-    }
-  }
-  initializePreferenceModalValues(){
-    Object.keys(this.preferenceService.inspectorFields).forEach((key) => {
-      this.inspectorFields[key] = this.preferenceService.inspectorFields[key];
-    });
-    this.defaultColor.set(this.preferenceService.defaultColor());
-    this.defaultSize.set(this.preferenceService.defaultSize());
-    this.defaultEdgeColor.set(this.preferenceService.defaultEdgeColor());
-  }
-  initializeCentralityModalValues(){
-
-  }
-  savePreferences(){
-
+    this.graphService.graphStyle = this.graphStyle
+    // get the graph styles and convert then to json string
+    const graph_styles = JSON.stringify(this.graphService.graphStyle);
     const formData = new FormData();
-    formData.append('inspector_fields', Object.values(this.inspectorFields).join(',') || '');
-    formData.append('default_color', this.defaultColor() || '');
-    formData.append('default_size', this.defaultSize().toString() || '');
-    formData.append('default_edge_color', this.defaultEdgeColor() || '');
-    this.networkService.setPreferences(this.session_id, formData).subscribe({
+    formData.append('graph_styles', graph_styles || '');
+    this.networkService.setPreferences(this.session_id,formData).subscribe({
       next: (res: any) => {
         if (res.status!= 0) {
           this.errorMessage = res.message;
           return;
         }
         console.log(res);
-        this.preferenceService.setPreferences(res.payload['preferences']);
-        this.modalBsService.dismissAll();
         this.graphService.updateGraph(this.cy);
       },
     });
-    
+  }
+  initializeCentralityModalValues(){
+
   }
   selectLegend(label:string | number){
     const legends:LegendItem[] = this.graphService.legends();

@@ -19,7 +19,7 @@ export class NetworkService {
   getLayoutApi = this.baseUrl + 'graph/get_layout_options';
   setLayoutApi = this.baseUrl + 'graph/set_layout';
   getNodeMetricsApi = this.baseUrl + 'graph/get_all_node_metrics';
-  setPreferencedApi = this.baseUrl + 'graph/set_preferences';
+  setPreferencesApi = this.baseUrl + 'graph/set_preferences';
   deleteSessionApi = this.baseUrl + 'loader/delete_session';
 
   httpClient = inject(HttpClient);
@@ -65,7 +65,7 @@ export class NetworkService {
     return this.callPost(this.getNodeMetricsApi + "/" + session_id, formData);
   }
   setPreferences(session_id:string, formData:FormData){
-    return this.callPost(this.setPreferencedApi + "/" + session_id, formData);
+    return this.callPost(this.setPreferencesApi + "/" + session_id, formData);
   }
   deleteSession(session_id:string){
     return this.callGet(this.deleteSessionApi + "/" + session_id);

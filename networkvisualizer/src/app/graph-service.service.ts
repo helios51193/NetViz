@@ -8,8 +8,10 @@ import {
   Node,
   LegendItem,
   NodeInfo,
+  GraphStyle,
+  Preferences,
 } from './app.model';
-import { PreferenceService } from './preference.service';
+import cytoscape from 'cytoscape';
 
 @Injectable({
   providedIn: 'root',
@@ -17,7 +19,6 @@ import { PreferenceService } from './preference.service';
 export class GraphService {
 
   networkService = inject(NetworkService);
-  preferenceService = inject(PreferenceService);
   sizeOptions = signal<SizeOption[]>([]);
   colorOptions = signal<SizeOption[]>([]);
   graph_data: NetworkNodesEdges = {} as NetworkNodesEdges;
@@ -131,7 +132,22 @@ export class GraphService {
   ];
   defaultColor = '#0074D9';
   defaultSize = 100;
-  public getGraphOptions(container_id: string) {
+
+  graphStyle:GraphStyle = {
+    show_nodes:true,
+    show_edges: true,
+    node_shape: 'ellipse',
+    node_height: 100,
+    node_width: 100,
+    border_color: '#0074D9',
+    border_width: 1,
+    edge_width:1,
+    node_color: '#0074D9',
+    edge_color: '#0074D9',
+    edge_style: 'solid',
+  }
+
+  public getGraphConfig(container_id: string) {
     const graphConfig = {
       container: document.getElementById(container_id),
       elements: [
@@ -158,19 +174,22 @@ export class GraphService {
         {
           selector: 'node',
           style: {
-            'background-color': this.preferenceService.defaultColor,
+            'opacity': this.graphStyle.show_nodes? 1: 0.1, // Set opacity to 1 for all nodes
+            'background-color': this.graphStyle.node_color,
             color: '#ffffff',
-            'border-width': this.preferenceService.defaultBorderWidth, // Border thickness
-            'border-color': this.preferenceService.defaultBorderColor, // Grey color
-            width: this.preferenceService.defaultSize,
-            height: this.preferenceService.defaultSize,
+            'border-width': this.graphStyle.border_width, // Border thickness
+            'border-color': this.graphStyle.border_color, // Grey color
+            width: this.graphStyle.node_width, // Adjust the size as needed
+            height: this.graphStyle.node_height,
+            shape: this.graphStyle.node_shape,
           },
         },
         {
           selector: 'edge',
           style: {
-            width: 1,
-            'line-color': this.preferenceService.defaultEdgeColor,
+            'opacity': this.graphStyle.show_edges? 1: 0.1,
+            width: this.graphStyle.edge_width,
+            'line-color': this.graphStyle.edge_color,
             'curve-style': 'bezier',
             'control-point-step-size': 80, // optional: controls spacing for multiple edges
             'source-arrow-color': '#90908e',
@@ -180,13 +199,14 @@ export class GraphService {
             'source-distance-from-node': 5,
             'target-distance-from-node': 5,
             'arrow-scale': 1.0,
+            'line-style': this.graphStyle.edge_style,
           },
         },
       ],
       layout: {
-        name: 'preset', // Use 'preset' layout to use the provided positions
+        name: 'preset',
         fit: true,
-        padding: 10,
+        padding: 5,
       },
       renderer: {
         name: 'canvas', // still uses the canvas renderer
@@ -202,9 +222,39 @@ export class GraphService {
     return graphConfig;
   }
 
+  private createGraphStyleSheet(){
+
+    const styleSheet = [
+      {
+        selector: 'node',
+        style:{
+          'opacity': this.graphStyle.show_nodes? 1: 0.1,
+          'background-color': this.graphStyle.node_color,
+          color: '#ffffff',
+          'border-width': this.graphStyle.border_width, // Border thickness
+          'border-color': this.graphStyle.border_color, // Grey color
+          width: this.graphStyle.node_width, // Adjust the size as needed
+          height: this.graphStyle.node_height,
+          shape: this.graphStyle.node_shape,
+        }
+      },{
+        selector: 'edge',
+        style:{
+          'opacity': this.graphStyle.show_edges? 1: 0.1,
+          width: this.graphStyle.edge_width,
+          'line-color': this.graphStyle.edge_color,
+          'line-style': this.graphStyle.edge_style,
+          'line-dash-pattern':[6,3]
+        }
+      }
+    ] 
+    return styleSheet;
+
+
+  }
+
+
   public generateSizeOptions() {
-
-
     if (this.sizeOptions().length > 0) {
       return;
     }
@@ -267,6 +317,29 @@ export class GraphService {
     });
     this.colorOptions.set(options);
   }
+
+  public setGraphStyles(graph_preferernces:any){
+
+    console.log(graph_preferernces)
+    if (!graph_preferernces.hasOwnProperty('graph_styles')){
+      console.log("No style found")
+      return
+    }
+      
+    
+    const graphStyles = graph_preferernces.graph_styles;
+    const temp:GraphStyle = {...this.graphStyle};
+
+    Object.keys(this.graphStyle).forEach((key:string) =>{
+      if (graphStyles.hasOwnProperty(key)){
+        (temp as any)[key] = (graphStyles as any)[key]
+      }
+    });
+    this.graphStyle = temp; 
+    console.log(this.graphStyle)
+  }
+
+
   public updateNodePositons(cy: any) {
     const nodes: Node[] = this.graph_data?.nodes || [];
     if (nodes.length === 0) {
@@ -493,16 +566,13 @@ export class GraphService {
     if (cy == null || cy == undefined) {
       return;
     }
-    cy = this.updateNodePositons(cy); // For Layout
-    cy = this.updateNodeSizes(cy); // For Size Size by
-    cy = this.updateNodeColors(cy); // For color by
-    cy = this.highlightNodesAndEdges(cy);
-    // cy = this.updateNodeOpacityByLegend(cy); // For Legend
-    // if (this.selectedNode().id !== "") {
-    //   cy = this.selectNode(cy);
-    // }
+    const currentZoom = cy.zoom();
+    const currentPan = cy.pan();
+    cy = this.updateNodePositons(cy);
+    cy.style(this.createGraphStyleSheet()).update();
     cy.layout({ 'name': 'preset' }).run();
-    cy.style().update();
+    cy.zoom(currentZoom);
+    cy.pan(currentPan);
 
   }
 
@@ -634,37 +704,6 @@ export class GraphService {
     return cy;
   }
 
-
-  private selectNode(cy: any) {
-    cy.nodes().forEach((node: any) => {
-      node.style('opacity', 0.1);
-    });
-
-    cy.edges().forEach((edge: any) => {
-      edge.style('opacity', 0.1);
-    });
-
-    const nodeId = this.selectedNode().id
-    const selectedNode = cy.getElementById(nodeId);
-    if (selectedNode) {
-      const connectedEdges = selectedNode.connectedEdges();
-      connectedEdges.forEach((edge: any) => {
-        edge.style('opacity', 1);
-
-        const sourceNode = edge.source();
-        const targetNode = edge.target();
-
-        if (sourceNode.id() !== nodeId) {
-          sourceNode.style('opacity', 1);
-        }
-        if (targetNode.id() !== nodeId) {
-          targetNode.style('opacity', 1);
-        }
-      });
-    }
-    selectedNode.style('opacity', 1);
-    return cy;
-  }
   public resetSelectedNode(cy: any) {
     cy.nodes().forEach((node: any) => {
       node.style('opacity', 1);
