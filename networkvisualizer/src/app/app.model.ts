@@ -40,6 +40,7 @@ export interface GraphStyle {
     edge_color:string,
     edge_style: "solid" | "dashed" | "dotted",
     edge_width:number,
+    highlighted_node_color:string
 }
 
 export interface NetworkNodesEdges {
@@ -56,6 +57,14 @@ export interface LayoutOption{
     name:string,
     display_name:string,
     value:any
+}
+export interface Filter{
+    name:string,
+    display_name:string,
+    type:string,
+    operator_string?:"contains" | "does not contains" | "equal to"
+    operator_number?:"equal to" | "not equal to" | "greater than" | "less than" | "greater than or equal to" | "less than or equal to"
+    operator_bool?:"equal to" | "not equal to"
 }
 
 export interface Layout{

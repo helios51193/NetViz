@@ -10,6 +10,7 @@ import {
   NodeInfo,
   GraphStyle,
   Preferences,
+  Filter,
 } from './app.model';
 import cytoscape from 'cytoscape';
 
@@ -21,6 +22,7 @@ export class GraphService {
   networkService = inject(NetworkService);
   sizeOptions = signal<SizeOption[]>([]);
   colorOptions = signal<SizeOption[]>([]);
+  filterOptions =  signal<Filter[]>([]);
   graph_data: NetworkNodesEdges = {} as NetworkNodesEdges;
   sizeBy = signal<string>('none');
   colorBy = signal<string>('none');
@@ -145,6 +147,7 @@ export class GraphService {
     node_color: '#0074D9',
     edge_color: '#0074D9',
     edge_style: 'solid',
+    highlighted_node_color:'#0074D9',
   }
 
   public getGraphConfig(container_id: string) {
@@ -316,6 +319,26 @@ export class GraphService {
       }
     });
     this.colorOptions.set(options);
+  }
+
+  public generateFilterOptions(){
+    if (this.filterOptions().length > 0) {
+      return;
+    }
+    const node_data = this.graph_data?.node_properties || [];
+    const nodes = this.graph_data?.nodes || [];
+
+    const options: Filter[] = [];
+    node_data.forEach((node: NodeProperty) => {
+      options.push({
+        name:node.name,
+        display_name:node.name.split('_').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+        type:node.dtype
+      })
+    });
+    this.filterOptions.set(options)
+    console.log(this.filterOptions())
+
   }
 
   public setGraphStyles(graph_preferernces:any){

@@ -8,7 +8,7 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { GraphService } from '../graph-service.service';
-import { InspectorFields, Layout, LayoutOption, LegendItem, NetworkNodesEdges, NodeInfo, Preferences } from '../app.model';
+import { Filter, InspectorFields, Layout, LayoutOption, LegendItem, NetworkNodesEdges, NodeInfo, Preferences } from '../app.model';
 import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ModalSevice } from '../modal-sevice.service';
@@ -60,8 +60,9 @@ export class NetworkViewComponentComponent {
   currentColorOption = signal<string>("none");
   selectedNode = computed(() => { return this.graphService.selectedNode() });
   graphStyle = this.graphService.graphStyle;
-  
-  
+  filterOptions = computed(() => {return this.graphService.filterOptions()})
+  filter:Filter = { name:"", display_name:'', type:"", operator_string:'equal to',operator_number:'equal to', operator_bool:'equal to' }
+  filterValue = signal<string>("");
   ngOnInit() {
 
     this.initialize_graph_and_settings();
@@ -105,6 +106,7 @@ export class NetworkViewComponentComponent {
         this.graphService.graph_data = res['payload'];
         this.graphService.generateSizeOptions();
         this.graphService.generateColorOptions();
+        this.graphService.generateFilterOptions();
         this.graphService.setGraphStyles(res['payload']['preferences']);
         this.graphStyle = this.graphService.graphStyle;
         this.setLayout(this.graphService.graph_data['layout']);
@@ -153,7 +155,15 @@ export class NetworkViewComponentComponent {
     });
   }
 
+  onFilterChange(event: Event) {
 
+    const selectElement = event.target as HTMLSelectElement;
+    const selectedFilterName = selectElement.value;
+    const selectedFilter = this.filterOptions().find(filter => filter.name === selectedFilterName);
+    if (selectedFilter) {
+      this.filter = selectedFilter;
+    }
+  }
 
 
   onLayoutChange(event: Event) {
