@@ -169,23 +169,46 @@
                     <div ngbAccordionCollapse>
                         <div ngbAccordionBody>
                             <ng-template>
-                                Comming Soon
-                                <!-- <div class="row">
+                                <div class="row">
                                     <div class="col-md-5">
                                         <label>Filter By</label>
                                     </div>
                                     <div class="col-md-7">
                                         <select class="form-control form-control-sm" (change)="onFilterChange($event)">
+                                            <option value="none">None</option>
                                         @for(filterOption of filterOptions(); track $index){
                                             <option [value]="filterOption.name">{{filterOption.display_name}}</option>
                                         }
                                         </select>
                                     </div>
-
-                                </div> -->
-                                <!-- <div class="form-group mt-2 text-end">
-                                    <button class="btn btn-primary btn-block btn-sm">Filter</button>
-                                </div> -->
+                                </div>
+                                @if(filter.name != ''){
+                                    <div class="row mt-2">
+                                        <div class="col-md-5">
+                                            <label>Operator</label>
+                                        </div>
+                                        <div class="col-md-7">
+                                            <select class="form-control form-control-sm" [(ngModel)]="filter.operator">
+                                                <option value="none">None</option>
+                                            @for(operator of filterOperators; track $index){
+                                                <option [value]="operator">{{operator}}</option>
+                                            }
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2">
+                                        <div class="col-md-5">
+                                            <label>Value</label>
+                                        </div>
+                                        <div class="col-md-7">
+                                            <input type="text" class="form-control form-control-sm" [(ngModel)]="filterValue">
+                                        </div>
+                                    </div>
+                                    <div class="form-group mt-2 text-end">
+                                        <button class="btn btn-primary btn-block btn-sm">Filter</button>
+                                    </div>
+                                }
+                                
                             </ng-template>  
                         </div>
                     </div>

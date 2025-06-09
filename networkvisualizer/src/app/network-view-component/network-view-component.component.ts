@@ -61,7 +61,8 @@ export class NetworkViewComponentComponent {
   selectedNode = computed(() => { return this.graphService.selectedNode() });
   graphStyle = this.graphService.graphStyle;
   filterOptions = computed(() => {return this.graphService.filterOptions()})
-  filter:Filter = { name:"", display_name:'', type:"", operator_string:'equal to',operator_number:'equal to', operator_bool:'equal to' }
+  filter:Filter = { name:"", display_name:'', type:"", operator:'equal to'}
+  filterOperators:string[] = []
   filterValue = signal<string>("");
   ngOnInit() {
 
@@ -159,9 +160,24 @@ export class NetworkViewComponentComponent {
 
     const selectElement = event.target as HTMLSelectElement;
     const selectedFilterName = selectElement.value;
+
+    if (selectedFilterName == "none") {
+      this.filter = { name: "", display_name: '', type: "", operator:"equal to"}
+      this.filterOperators = []
+      return;
+    }
     const selectedFilter = this.filterOptions().find(filter => filter.name === selectedFilterName);
     if (selectedFilter) {
       this.filter = selectedFilter;
+      if(this.filter.type == "string"){
+        this.filterOperators = this.graphService.filterOperator_string
+      }
+      else if (this.filter.type == "int" || this.filter.type == "float"){
+        this.filterOperators = this.graphService.filterOperator_number
+      } 
+      else {
+        this.filterOperators =this.graphService.filterOperator_bool
+      }
     }
   }
 

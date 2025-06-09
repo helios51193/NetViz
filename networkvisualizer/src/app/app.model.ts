@@ -62,9 +62,7 @@ export interface Filter{
     name:string,
     display_name:string,
     type:string,
-    operator_string?:"contains" | "does not contains" | "equal to"
-    operator_number?:"equal to" | "not equal to" | "greater than" | "less than" | "greater than or equal to" | "less than or equal to"
-    operator_bool?:"equal to" | "not equal to"
+    operator:"contains" | "does not contains" | "equal to" | "equal to" | "not equal to" | "greater than" | "less than" | "greater than or equal to" | "less than or equal to"
 }
 
 export interface Layout{

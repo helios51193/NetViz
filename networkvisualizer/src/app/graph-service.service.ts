@@ -23,6 +23,9 @@ export class GraphService {
   sizeOptions = signal<SizeOption[]>([]);
   colorOptions = signal<SizeOption[]>([]);
   filterOptions =  signal<Filter[]>([]);
+  filterOperator_string =["contains","does not contains","equal to"]
+  filterOperator_number =["equal to","not equal to","greater than","less than","greater than or equal to","less than or equal to"]
+  filterOperator_bool = ["equal to","not equal to"]
   graph_data: NetworkNodesEdges = {} as NetworkNodesEdges;
   sizeBy = signal<string>('none');
   colorBy = signal<string>('none');
@@ -333,7 +336,8 @@ export class GraphService {
       options.push({
         name:node.name,
         display_name:node.name.split('_').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
-        type:node.dtype
+        type:node.dtype,
+        operator:'equal to'
       })
     });
     this.filterOptions.set(options)
