@@ -169,7 +169,7 @@ export class NetworkViewComponentComponent {
     const selectedFilter = this.filterOptions().find(filter => filter.name === selectedFilterName);
     if (selectedFilter) {
       this.filter = selectedFilter;
-      if(this.filter.type == "string"){
+      if(this.filter.type == "str"){
         this.filterOperators = this.graphService.filterOperator_string
       }
       else if (this.filter.type == "int" || this.filter.type == "float"){
@@ -255,6 +255,12 @@ export class NetworkViewComponentComponent {
         this.graphService.updateGraph(this.cy);
       },
     });
+  }
+
+  onSubmitFilter(){
+    console.log(this.filterValue())
+    console.log(this.filter)
+
   }
   initializeCentralityModalValues(){
 

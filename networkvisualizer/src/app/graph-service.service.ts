@@ -741,5 +741,51 @@ export class GraphService {
     cy.style().update();
   }
 
+  public generateFilteredList(filterOptions:Filter, filterValue:string ){
 
+    var value:any = undefined
+    const ids:string[] = []
+    if (filterOptions.type = "bool"){
+      value = filterValue == "true" ? true : false;
+    }
+    else if(filterOptions.type == "int" || filterOptions.type == 'float'){
+      value = parseFloat(filterValue)
+    }
+    else {
+      value = filterValue
+    }
+
+    this.graph_data.nodes.forEach(node => {
+
+      var selected = false;
+      const propertyValue = (node as any)[filterOptions.name];
+      switch(filterOptions.type){
+        case 'bool': if(propertyValue == value){
+                      selected = true;
+                    }
+                    break;
+        case  'int': 
+        case 'float': if ((filterOptions.operator == "equal to" && propertyValue == value) || 
+                          (filterOptions.operator == "not equal to" && propertyValue != value) ||
+                          (filterOptions.operator == "greater than" && propertyValue > value) ||
+                          (filterOptions.operator == "greater than or equal to" && propertyValue >= value) ||
+                          (filterOptions.operator == "less than" && propertyValue < value) ||
+                          (filterOptions.operator == "less than or equal to" && propertyValue <= value)){
+                          selected = true;
+                      }
+          break;
+        case 'str':if ((filterOptions.operator == "equal to" && propertyValue == value) || 
+                  (filterOptions.operator == "contains" && propertyValue.includes(value)) ||
+                  (filterOptions.operator == "does not contains" && !propertyValue.includes(value))){
+                    selected = true;
+                  }
+                    break;
+      }
+      if (selected){
+        ids.push(node.id)
+
+      }
+    });
+    console.log(ids)
+  }
 }
