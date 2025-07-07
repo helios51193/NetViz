@@ -147,6 +147,9 @@ export class NetworkViewComponentComponent {
         if (reset_style) {
           this.currentSizeOption.set("none");
           this.currentColorOption.set("none");
+          this.filter = { name:"", display_name:'', type:"", operator:'equal to'}
+          this.filterValue.set("");
+          this.graphService.selectedFilter = this.filter
           this.graphService.resetSelectedNode(this.cy);
           this.graphService.colorBy.set(this.currentColorOption());
           this.graphService.sizeBy.set(this.currentSizeOption());
@@ -258,9 +261,11 @@ export class NetworkViewComponentComponent {
   }
 
   onSubmitFilter(){
-    console.log(this.filterValue())
-    console.log(this.filter)
-
+    this.graphService.selectedFilter = this.filter;
+    this.graphService.filterValue = this.filterValue();
+    console.log(this.filter);
+    console.log(this.filterValue());
+    this.graphService.updateGraph(this.cy);
   }
   initializeCentralityModalValues(){
 

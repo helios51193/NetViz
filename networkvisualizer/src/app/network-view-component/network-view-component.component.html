@@ -189,7 +189,6 @@
                                         </div>
                                         <div class="col-md-7">
                                             <select class="form-control form-control-sm" [(ngModel)]="filter.operator">
-                                                <option value="none">None</option>
                                             @for(operator of filterOperators; track $index){
                                                 <option [value]="operator">{{operator}}</option>
                                             }

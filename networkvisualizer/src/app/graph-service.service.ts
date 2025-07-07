@@ -137,6 +137,8 @@ export class GraphService {
   ];
   defaultColor = '#0074D9';
   defaultSize = 100;
+  selectedFilter:Filter = { name:"", display_name:"", type:"", operator:"equal to"};
+  filterValue:string = ""
 
   graphStyle:GraphStyle = {
     show_nodes:true,
@@ -153,6 +155,8 @@ export class GraphService {
     highlighted_node_color:'#0074D9',
   }
 
+
+  // Generate the graph configuration object based on various settings 
   public getGraphConfig(container_id: string) {
     const graphConfig = {
       container: document.getElementById(container_id),
@@ -228,6 +232,9 @@ export class GraphService {
     return graphConfig;
   }
 
+
+  // Create a style sheet which can be used to update the graph style
+  // It is used when updating the styles of nodes and edges after user input
   private createGraphStyleSheet(){
 
     const styleSheet = [
@@ -259,7 +266,9 @@ export class GraphService {
 
   }
 
-
+  // Generate the list of options from the graph
+  // This list contains all the properties which can be used as the size of the node.
+  // This inclused all the numeric node properties and some metrics such as degree, closeness, etc.
   public generateSizeOptions() {
     if (this.sizeOptions().length > 0) {
       return;
@@ -295,6 +304,10 @@ export class GraphService {
     this.sizeOptions.set(options);
   }
 
+  
+  // Generate the list of options from the graph
+  // This list contains all the properties which can be used as the color of the node.
+  // This includes all the categorical node properties.
   public generateColorOptions() {
     if (this.colorOptions().length > 0) {
       return;
@@ -324,6 +337,9 @@ export class GraphService {
     this.colorOptions.set(options);
   }
 
+
+  // Generate the list of options from the graph
+  // This list contains all the properties which can be used as the filter of the graph.
   public generateFilterOptions(){
     if (this.filterOptions().length > 0) {
       return;
@@ -340,11 +356,10 @@ export class GraphService {
         operator:'equal to'
       })
     });
-    this.filterOptions.set(options)
-    console.log(this.filterOptions())
-
+    this.filterOptions.set(options);
   }
 
+  // Populate the graphstyle property of the class from the data received from the server
   public setGraphStyles(graph_preferernces:any){
 
     console.log(graph_preferernces)
@@ -366,7 +381,7 @@ export class GraphService {
     console.log(this.graphStyle)
   }
 
-
+  // Used to update the node position after used selects a layout
   public updateNodePositons(cy: any) {
     const nodes: Node[] = this.graph_data?.nodes || [];
     if (nodes.length === 0) {
@@ -589,6 +604,8 @@ export class GraphService {
     return cy;
   }
 
+
+  // Entry point of all graph updations
   public updateGraph(cy: any) {
     if (cy == null || cy == undefined) {
       return;
@@ -597,6 +614,8 @@ export class GraphService {
     const currentPan = cy.pan();
     cy = this.updateNodePositons(cy);
     cy.style(this.createGraphStyleSheet()).update();
+    const filtered_ids = this.generateFilteredList();
+    cy = this.updateNodeOpacity(cy, filtered_ids);
     cy.layout({ 'name': 'preset' }).run();
     cy.zoom(currentZoom);
     cy.pan(currentPan);
@@ -731,6 +750,22 @@ export class GraphService {
     return cy;
   }
 
+  updateNodeOpacity(cy: cytoscape.Core, nodeIds: string[]) {
+    
+    if (this.selectedFilter.name == ""){
+      return cy;
+    }
+    cy.nodes().forEach(node => {
+      if (nodeIds.includes(node.id())) {
+        node.style('opacity', 1.0);
+      } else {
+        node.style('opacity', 0.2);
+      }
+    });
+
+    return cy;
+  }
+
   public resetSelectedNode(cy: any) {
     cy.nodes().forEach((node: any) => {
       node.style('opacity', 1);
@@ -741,51 +776,69 @@ export class GraphService {
     cy.style().update();
   }
 
-  public generateFilteredList(filterOptions:Filter, filterValue:string ){
+  // Generate a list of ids based on the filter and filter value
+  public generateFilteredList(){
+
+    const filterOptions = this.selectedFilter;
+    const filterValue = this.filterValue;
 
     var value:any = undefined
     const ids:string[] = []
-    if (filterOptions.type = "bool"){
+    if (filterOptions.type == "bool"){
       value = filterValue == "true" ? true : false;
     }
     else if(filterOptions.type == "int" || filterOptions.type == 'float'){
       value = parseFloat(filterValue)
     }
     else {
-      value = filterValue
+      value = filterValue.toLowerCase();
     }
-
+    
+    // Edge case- when show nodes is disabled , filter should not work
+    if(this.graphStyle.show_nodes == false){
+      return []
+    }
     this.graph_data.nodes.forEach(node => {
+      if (filterOptions.name == ""){
+        ids.push(node.id);
+      }else{
+          var selected = false;
+          var propertyValue = (node as any)['attributes'][filterOptions.name];
+          
+          if (filterOptions.type == "bool"){
+            if(propertyValue == value){
+              selected = true;
+            }
+          }else if (filterOptions.type == "int" || filterOptions.type == "float"){
+            if ((filterOptions.operator == "equal to" && propertyValue == value) || 
+                              (filterOptions.operator == "not equal to" && propertyValue != value) ||
+                              (filterOptions.operator == "greater than" && propertyValue > value) ||
+                              (filterOptions.operator == "greater than or equal to" && propertyValue >= value) ||
+                              (filterOptions.operator == "less than" && propertyValue < value) ||
+                              (filterOptions.operator == "less than or equal to" && propertyValue <= value)){
+                              selected = true;
+              }
+          }else if(filterOptions.type == "str"){
+            propertyValue = propertyValue.toLowerCase();
+            if(filterOptions.operator == "equal to" && propertyValue == value){
+              selected = true
+            }
+            if(filterOptions.operator == "contains" && propertyValue.includes(value)){
+              selected = true;
+            }
+            if(filterOptions.operator == "does not contains" && !propertyValue.includes(value)){
+              selected = true;
 
-      var selected = false;
-      const propertyValue = (node as any)[filterOptions.name];
-      switch(filterOptions.type){
-        case 'bool': if(propertyValue == value){
-                      selected = true;
-                    }
-                    break;
-        case  'int': 
-        case 'float': if ((filterOptions.operator == "equal to" && propertyValue == value) || 
-                          (filterOptions.operator == "not equal to" && propertyValue != value) ||
-                          (filterOptions.operator == "greater than" && propertyValue > value) ||
-                          (filterOptions.operator == "greater than or equal to" && propertyValue >= value) ||
-                          (filterOptions.operator == "less than" && propertyValue < value) ||
-                          (filterOptions.operator == "less than or equal to" && propertyValue <= value)){
-                          selected = true;
-                      }
-          break;
-        case 'str':if ((filterOptions.operator == "equal to" && propertyValue == value) || 
-                  (filterOptions.operator == "contains" && propertyValue.includes(value)) ||
-                  (filterOptions.operator == "does not contains" && !propertyValue.includes(value))){
-                    selected = true;
-                  }
-                    break;
-      }
-      if (selected){
-        ids.push(node.id)
+            }
+           
+          }
 
+        if (selected){
+          ids.push(node.id)
+
+        }
       }
     });
-    console.log(ids)
+    return ids
   }
 }
