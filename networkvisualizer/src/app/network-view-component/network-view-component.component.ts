@@ -51,8 +51,12 @@ export class NetworkViewComponentComponent {
   currentLayout = signal<Layout>({ name: 'random', display_name: 'Random', options: [{ name: 'seed', display_name: 'Seed', value: 42 }] });
   options: { [key: string]: any } = { "seed": 42 };
   layoutFormGenerated = signal<boolean>(false);
-  sizeByOptions = computed(() => { return this.graphService.sizeOptions() });
-  colorByOptions = computed(() => { return this.graphService.colorOptions() });
+  sizeByOptions = computed(() => { return this.graphService.sizeOptions(); });
+  colorByOptions = computed(() => { return this.graphService.colorOptions(); });
+  shapeByOptions = computed(() => {return this.graphService.shapeOptions(); });
+  selectedShape = signal<string>("")
+  selectedSize = signal<string>("")
+  selectedColor = signal<string>("")
   legends = computed(() => { return this.graphService.legends() });
   inspectorOptions = computed(() => { return this.preferenceService.inspectorOptions() });
   session_name = signal<string>("");
@@ -88,9 +92,22 @@ export class NetworkViewComponentComponent {
         this.networkService.layout_options.set([{ name: 'random', display_name: 'Random', options: {} }]);
       }
     });
+
+    const analytics_subscription = this.networkService.getAnalyticsOptions(this.session_id).subscribe({
+      next:(res:any) => {
+        if (res.status != 0) {
+          console.log("error in getting analytics options :" + res['message']);
+          return;
+        }
+        this.graphService.sizeOptions.set(res['payload']['size_options']);
+        this.graphService.colorOptions.set(res['payload']['color_options']);
+        this.graphService.shapeOptions.set(res['payload']['shape_options']);
+      }
+    })
     this.destroyRef.onDestroy(() => {
       layout_subscription.unsubscribe();
       centralitiesSub.unsubscribe();
+      analytics_subscription.unsubscribe();
     });
     
   }
@@ -105,8 +122,6 @@ export class NetworkViewComponentComponent {
         console.log(res);
         this.session_name.set(res['payload']['session_name']);
         this.graphService.graph_data = res['payload'];
-        this.graphService.generateSizeOptions();
-        this.graphService.generateColorOptions();
         this.graphService.generateFilterOptions();
         this.graphService.setGraphStyles(res['payload']['preferences']);
         this.graphStyle = this.graphService.graphStyle;
@@ -266,6 +281,25 @@ export class NetworkViewComponentComponent {
     console.log(this.filter);
     console.log(this.filterValue());
     this.graphService.updateGraph(this.cy);
+  }
+  onResetFilter(){
+    this.filter = { name: "", display_name: '', type: "", operator:"equal to"};
+    this.graphService.selectedFilter = this.filter;
+    this.graphService.updateGraph(this.cy);
+  }
+
+  onApplyAnalytics(){
+    //TODO:Add functionality of analytics
+    console.log(this.selectedColor());
+    console.log(this.selectedSize());
+    console.log(this.selectedShape());
+    //TODO: Update graph
+  }
+  onResetAnalytics(){
+    this.selectedColor.set("");
+    this.selectedSize.set("");
+    this.selectedShape.set("");
+    //TODO: Update graph
   }
   initializeCentralityModalValues(){
 

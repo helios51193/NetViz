@@ -20,8 +20,9 @@ import cytoscape from 'cytoscape';
 export class GraphService {
 
   networkService = inject(NetworkService);
-  sizeOptions = signal<SizeOption[]>([]);
-  colorOptions = signal<SizeOption[]>([]);
+  sizeOptions = signal<string[]>([]);
+  colorOptions = signal<string[]>([]);
+  shapeOptions = signal<string[]>([]);
   filterOptions =  signal<Filter[]>([]);
   filterOperator_string =["contains","does not contains","equal to"]
   filterOperator_number =["equal to","not equal to","greater than","less than","greater than or equal to","less than or equal to"]
@@ -154,8 +155,6 @@ export class GraphService {
     edge_style: 'solid',
     highlighted_node_color:'#0074D9',
   }
-
-
   // Generate the graph configuration object based on various settings 
   public getGraphConfig(container_id: string) {
     const graphConfig = {
@@ -232,7 +231,6 @@ export class GraphService {
     return graphConfig;
   }
 
-
   // Create a style sheet which can be used to update the graph style
   // It is used when updating the styles of nodes and edges after user input
   private createGraphStyleSheet(){
@@ -265,78 +263,6 @@ export class GraphService {
 
 
   }
-
-  // Generate the list of options from the graph
-  // This list contains all the properties which can be used as the size of the node.
-  // This inclused all the numeric node properties and some metrics such as degree, closeness, etc.
-  public generateSizeOptions() {
-    if (this.sizeOptions().length > 0) {
-      return;
-    }
-    const node_data = this.graph_data?.node_properties || [];
-    const options = [];
-    options.push(
-      {
-        display_name: 'None',
-        name: 'none',
-      },
-      {
-        display_name: 'In Degree',
-        name: 'in_degree',
-      },
-      {
-        display_name: 'Out Degree',
-        name: 'out_degree',
-      }
-    );
-
-    node_data.forEach((node) => {
-      if (node.dtype == 'int' || node.dtype == 'float') {
-        options.push({
-          display_name: node.name
-            .split('_')
-            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' '),
-          name: node.name,
-        });
-      }
-    });
-    this.sizeOptions.set(options);
-  }
-
-  
-  // Generate the list of options from the graph
-  // This list contains all the properties which can be used as the color of the node.
-  // This includes all the categorical node properties.
-  public generateColorOptions() {
-    if (this.colorOptions().length > 0) {
-      return;
-    }
-    const node_data = this.graph_data?.node_properties || [];
-    const nodes = this.graph_data?.nodes || [];
-
-    const options: any = [];
-    const total_nodes = nodes.length;
-    options.push({
-      display_name: 'None',
-      name: 'none',
-    });
-    node_data.forEach((node: NodeProperty) => {
-      if (node.dtype == 'str') {
-        if (node.unique_values && node.unique_values.length < total_nodes) {
-          options.push({
-            display_name: node.name
-              .split('_')
-              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-              .join(' '),
-            name: node.name,
-          });
-        }
-      }
-    });
-    this.colorOptions.set(options);
-  }
-
 
   // Generate the list of options from the graph
   // This list contains all the properties which can be used as the filter of the graph.
@@ -751,12 +677,12 @@ export class GraphService {
   }
 
   updateNodeOpacity(cy: cytoscape.Core, nodeIds: string[]) {
-    
-    if (this.selectedFilter.name == ""){
-      return cy;
-    }
+  
     cy.nodes().forEach(node => {
-      if (nodeIds.includes(node.id())) {
+      
+      if(this.selectedFilter.name == ""){
+        node.style('opacity', 1.0);
+      }else if (nodeIds.includes(node.id())) {
         node.style('opacity', 1.0);
       } else {
         node.style('opacity', 0.2);

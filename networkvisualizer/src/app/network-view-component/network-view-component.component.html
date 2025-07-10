@@ -174,8 +174,8 @@
                                         <label>Filter By</label>
                                     </div>
                                     <div class="col-md-7">
-                                        <select class="form-control form-control-sm" (change)="onFilterChange($event)">
-                                            <option value="none">None</option>
+                                        <select class="form-control form-control-sm" [(ngModel)]="filter.name" (change)="onFilterChange($event)">
+                                            <option value="">None</option>
                                         @for(filterOption of filterOptions(); track $index){
                                             <option [value]="filterOption.name">{{filterOption.display_name}}</option>
                                         }
@@ -204,6 +204,7 @@
                                         </div>
                                     </div>
                                     <div class="form-group mt-2 text-end">
+                                        <button class="btn btn-secondary btn-sm" (click)="onResetFilter()">Reset</button> &nbsp;
                                         <button class="btn btn-primary btn-block btn-sm" (click)="onSubmitFilter()">Filter</button>
                                     </div>
                                 }
@@ -219,9 +220,49 @@
                     <div ngbAccordionCollapse>
                         <div ngbAccordionBody>
                             <ng-template>
+                                <div class="row mt-1">
+                                    <div class="col-md-6">
+                                        <label>Size by :</label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <select class="form-control form-control-sm" [(ngModel)]="selectedSize">
+                                            <option value="">None</option>
+                                            @for(opt of sizeByOptions(); track $index){
+                                                <option [value]="opt">{{opt}}</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row mt-1">
+                                    <div class="col-md-6">
+                                        <label>Color by :</label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <select class="form-control form-control-sm" [(ngModel)]="selectedColor">
+                                            <option value="">None</option>
+                                            @for(opt of colorByOptions(); track $index){
+                                                <option [value]="opt">{{opt}}</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row mt-1">
+                                    <div class="col-md-6">
+                                        <label>Shape by :</label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <select class="form-control form-control-sm" [(ngModel)]="selectedShape">
+
+                                            <option value="">None</option>
+                                             @for(opt of shapeByOptions(); track $index){
+                                                <option [value]="opt">{{opt}}</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
                                 <div class="form-group mt-2 text-end">
-                                    Comming Soon
-                                    <!-- <button class="btn btn-primary btn-block btn-sm" (click)="onSubmitStyle()">Filter</button> -->
+                                    <button class="btn btn-secondary btn-block btn-sm" (click)="onResetAnalytics()" >Reset</button> &nbsp;
+                                    <button class="btn btn-primary btn-block btn-sm" (click)="onApplyAnalytics()">Apply</button>
                                 </div>
                             </ng-template>  
                         </div>

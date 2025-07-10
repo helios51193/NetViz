@@ -17,6 +17,7 @@ export class NetworkService {
   getSessionApi = this.baseUrl + 'loader/get_sessions';
   getBasicInfoApi = this.baseUrl + 'graph/get_basic_info';
   getLayoutApi = this.baseUrl + 'graph/get_layout_options';
+  getAnalyticsApi = this.baseUrl + 'graph/analytics_metadata';
   setLayoutApi = this.baseUrl + 'graph/set_layout';
   getNodeMetricsApi = this.baseUrl + 'graph/get_all_node_metrics';
   setPreferencesApi = this.baseUrl + 'graph/set_preferences';
@@ -60,6 +61,9 @@ export class NetworkService {
   }
   getLayoutOptions(){
     return this.callGet(this.getLayoutApi);
+  }
+  getAnalyticsOptions(session_id:string){
+    return this.callGet(this.getAnalyticsApi + "/" + session_id);
   }
   getNodeMetrics(session_id:string, formData:FormData){
     return this.callPost(this.getNodeMetricsApi + "/" + session_id, formData);
