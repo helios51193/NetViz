@@ -11,6 +11,7 @@ import {
   GraphStyle,
   Preferences,
   Filter,
+  Metrics,
 } from './app.model';
 import cytoscape from 'cytoscape';
 
@@ -23,6 +24,9 @@ export class GraphService {
   sizeOptions = signal<string[]>([]);
   colorOptions = signal<string[]>([]);
   shapeOptions = signal<string[]>([]);
+  selectedSizeOption:string = ""
+  selectedColorOption:string = ""
+  selectedshapeOption:string = ""
   filterOptions =  signal<Filter[]>([]);
   filterOperator_string =["contains","does not contains","equal to"]
   filterOperator_number =["equal to","not equal to","greater than","less than","greater than or equal to","less than or equal to"]
@@ -30,7 +34,6 @@ export class GraphService {
   graph_data: NetworkNodesEdges = {} as NetworkNodesEdges;
   sizeBy = signal<string>('none');
   colorBy = signal<string>('none');
-  nodeMetrics = signal<NodeMetric>({}); // Add this fiel
   legends = signal<LegendItem[]>([]);
   selectedLegendLabel: string | number = "";
   selectedNode = signal<NodeInfo>({ "id": "", "properties": [] });
@@ -140,7 +143,7 @@ export class GraphService {
   defaultSize = 100;
   selectedFilter:Filter = { name:"", display_name:"", type:"", operator:"equal to"};
   filterValue:string = ""
-
+  nodeMetrics:Metrics = {}
   graphStyle:GraphStyle = {
     show_nodes:true,
     show_edges: true,
@@ -154,6 +157,8 @@ export class GraphService {
     edge_color: '#0074D9',
     edge_style: 'solid',
     highlighted_node_color:'#0074D9',
+    max_size: 500,
+    min_size:100
   }
   // Generate the graph configuration object based on various settings 
   public getGraphConfig(container_id: string) {
@@ -326,43 +331,7 @@ export class GraphService {
     return cy;
   }
 
-  public updateNodeSizes(cy: any) {
-    const nodes: Node[] = this.graph_data?.nodes || [];
-    const nodeMetrics = this.nodeMetrics();
-    const property = this.sizeBy();
-    if (nodes.length === 0 || !this.nodeMetrics || !property) {
-      return cy;
-    }
-    if (property === 'none') {
-      nodes.forEach((node: Node) => {
-        const cy_node = cy.getElementById(node.id);
-        if (cy_node) {
-          cy_node.style({
-            width: this.defaultSize,
-            height: this.defaultSize,
-          });
-        }
-      });
-    } else {
-      const values = Object.values(nodeMetrics)
-        .map((node) => node[property])
-        .filter((value) => typeof value === 'number');
-      const maxValue = Math.max(...values, 1);
-      Object.keys(nodeMetrics).forEach((nodeId) => {
-        const node = cy.getElementById(nodeId);
-        if (!node) {
-          console.log('node not found');
-        }
-        const size = nodeMetrics[nodeId][property] || 1;
-        const scaledSize = 10 + (size / maxValue) * 200;
-        node.style({
-          width: scaledSize,
-          height: scaledSize,
-        });
-      });
-    }
-    return cy;
-  }
+  
 
   public updateNodeColors(cy: any) {
     const nodes: Node[] = this.graph_data?.nodes || [];
@@ -407,43 +376,7 @@ export class GraphService {
     }
     return cy;
   }
-  public updateNodeSize(cy: any, property: string, nodes: Node[], nodeMetrics: NodeMetric) {
-    console.log('Updating Node Size');
-    console.log(property);
-    if (property === 'none') {
-      nodes.forEach((node: Node) => {
-        const cy_node = cy.getElementById(node.id);
-        if (cy_node) {
-          console.log('node not found');
-        }
-        cy_node.style({
-          width: this.defaultSize,
-          height: this.defaultSize,
-        });
-      });
-    } else {
-      const values = Object.values(nodeMetrics)
-        .map((node) => node[property])
-        .filter((value) => typeof value === 'number');
 
-      const maxValue = Math.max(...values, 1);
-      console.log(maxValue);
-      Object.keys(nodeMetrics).forEach((nodeId) => {
-        const node = cy.getElementById(nodeId);
-        if (!node) {
-          console.log('node not found');
-        }
-        const size = nodeMetrics[nodeId][property] || 1;
-        const scaledSize = 10 + (size / maxValue) * 200;
-        node.style({
-          width: scaledSize,
-          height: scaledSize,
-        });
-      });
-    }
-
-    cy.style().update();
-  }
 
   public updateColor(cy: any, property: string, nodes: Node[]) {
     if (property === 'none') {
@@ -539,7 +472,10 @@ export class GraphService {
     const currentZoom = cy.zoom();
     const currentPan = cy.pan();
     cy = this.updateNodePositons(cy);
+    
+    // Initializing Default 
     cy.style(this.createGraphStyleSheet()).update();
+    cy = this.updateNodeSizes(cy);
     const filtered_ids = this.generateFilteredList();
     cy = this.updateNodeOpacity(cy, filtered_ids);
     cy.layout({ 'name': 'preset' }).run();
@@ -566,6 +502,52 @@ export class GraphService {
     return rgbHex.toLowerCase() === hexString.toLowerCase();
   }
 
+  private updateNodeSizes(cy:any){
+      
+    // when size by is none
+    console.log(this.selectedSizeOption);
+    if (this.selectedSizeOption == ""){
+      console.log("reverted to none")
+
+      cy.nodes().forEach((node: any) => {
+        node.style('width', this.graphStyle.node_width);
+        node.style('height', this.graphStyle.node_height);
+      });
+    }else{
+      console.log("size by " + this.selectedSizeOption)
+      const sizeMetrics = this.nodeMetrics[this.selectedSizeOption];
+      let minMetric = Infinity;
+      let maxMetric = -Infinity;
+      
+      Object.values(sizeMetrics).forEach((value: any) => {
+        if (value < minMetric) minMetric = value;
+        if (value > maxMetric) maxMetric = value;
+      });
+
+      const minSize = this.graphStyle.min_size;
+      const maxSize = this.graphStyle.max_size;
+
+      cy.nodes().forEach((node: any) => {
+        const nodeSize:number = sizeMetrics[node.id()] as number;
+        let scaledSize;
+        if (maxMetric === minMetric) {
+          // If all values are the same, use the middle of the range
+          scaledSize = (minSize + maxSize) / 2;
+        } else {
+          // Linear scaling formula: newValue = minSize + (value - minMetric) * (maxSize - minSize) / (maxMetric - minMetric)
+          scaledSize = minSize + ((nodeSize - minMetric) * (maxSize - minSize) / (maxMetric - minMetric));
+        }
+        node.style('width', scaledSize);
+        node.style('height', scaledSize);
+      });
+    }
+    
+    
+    
+    
+    
+    return cy
+  }
 
 
   private rgbToHex(r: number, g: number, b: number): string {
@@ -756,9 +738,7 @@ export class GraphService {
               selected = true;
 
             }
-           
           }
-
         if (selected){
           ids.push(node.id)
 

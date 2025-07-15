@@ -289,17 +289,29 @@ export class NetworkViewComponentComponent {
   }
 
   onApplyAnalytics(){
-    //TODO:Add functionality of analytics
-    console.log(this.selectedColor());
-    console.log(this.selectedSize());
-    console.log(this.selectedShape());
-    //TODO: Update graph
+    this.graphService.selectedSizeOption = this.selectedSize();
+    const metricsFormData = new FormData()
+    metricsFormData.append('size', this.selectedSize())
+    const sub = this.networkService.getMetrics(this.session_id, metricsFormData).subscribe({
+      next:(res:any) => {
+          if(res['status'] != 0){
+            console.log(res)
+            return;
+          }
+          console.log(res);
+          this.graphService.nodeMetrics = res['payload'];
+          this.graphService.updateGraph(this.cy);
+      }
+    })
   }
   onResetAnalytics(){
     this.selectedColor.set("");
     this.selectedSize.set("");
     this.selectedShape.set("");
-    //TODO: Update graph
+    this.graphService.selectedSizeOption = "";
+    this.graphService.selectedColorOption = "";
+    this.graphService.selectedshapeOption = "";
+    this.graphService.updateGraph(this.cy);
   }
   initializeCentralityModalValues(){
 

@@ -19,9 +19,9 @@ export class NetworkService {
   getLayoutApi = this.baseUrl + 'graph/get_layout_options';
   getAnalyticsApi = this.baseUrl + 'graph/analytics_metadata';
   setLayoutApi = this.baseUrl + 'graph/set_layout';
-  getNodeMetricsApi = this.baseUrl + 'graph/get_all_node_metrics';
   setPreferencesApi = this.baseUrl + 'graph/set_preferences';
   deleteSessionApi = this.baseUrl + 'loader/delete_session';
+  getMetricsApi = this.baseUrl + "graph/generate_metrics";
 
   httpClient = inject(HttpClient);
   network_meta_data = signal<any>({});
@@ -65,8 +65,8 @@ export class NetworkService {
   getAnalyticsOptions(session_id:string){
     return this.callGet(this.getAnalyticsApi + "/" + session_id);
   }
-  getNodeMetrics(session_id:string, formData:FormData){
-    return this.callPost(this.getNodeMetricsApi + "/" + session_id, formData);
+  getMetrics(session_id:string, formData:FormData){
+    return this.callPost(this.getMetricsApi + "/" + session_id, formData);
   }
   setPreferences(session_id:string, formData:FormData){
     return this.callPost(this.setPreferencesApi + "/" + session_id, formData);

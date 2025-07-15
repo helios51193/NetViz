@@ -1,4 +1,8 @@
 import json
+from typing import List
+import traceback
+import networkx as nx
+from networkvisualizer.utilities.session_manager import SessionManager
 def extract_preferences(request, session_data):
     
     preferences = session_data.get('preferences',{})    
@@ -36,5 +40,66 @@ def extract_analytics_metadata(session_data):
     return {"status":0 , "message":"analytics metadata", "payload":{
         "size":size_properties,"shape":shape_properties,"color":color_properties
     }}
+
+
+
+def generate_node_metrics(session_data, metrics:List[str]):
+
+    try:
+        generated_metrics = {}
+        properties = extract_analytics_metadata(session_data)
+        properties = properties['payload']
+        cached_metrics = session_data.get("metrics", {})
+        for metric in metrics:
+            if metric in cached_metrics.keys():
+                generated_metrics[metric] = cached_metrics[metric]
+            G = session_data['graph']
+
+            if metric == "" or metric in ["none","None"]:
+                continue
+            if metric in properties['shape'] or metric in properties['color']:
+                generated_metrics[metric] = { x:data[metric] for x,data in G.nodes(data=True)}
+            elif metric in ["in_degree","out_degree","betweeness","closeness"]:
+                if metric == "in_degree":
+                    _centrality = nx.in_degree_centrality(G)
+                elif metric == "out_degree":
+                    _centrality = nx.out_degree_centrality(G)
+                elif metric == "betweeness":
+                    _centrality = nx.betweenness_centrality(G)
+                elif metric == "closeness":
+                    _centrality = nx.closeness_centrality(G)
+                generated_metrics[metric] = _centrality
+            elif metric in properties['size']:
+                generated_metrics[metric] = { x:data[metric] for x,data in G.nodes(data=True)}
+            else:
+                generated_metrics[metric] = {}
+        
+        return {"status":0, "message":"generated metrics", "payload":generated_metrics}
+    except Exception as e:
+        print(f"{traceback.format_exc()}")
+        return {"status":1, "message":f"Error in generating metrics {e}", "payload":{}}
+    
+
+
+
+def cache_generated_metrics(session_manager:SessionManager, session, metrics):
+
+    cached_metrics = {}
+    if "metrics" in session.data:
+        metrics = session.data['metrics']
+
+
+    for metric in metrics:
+        if metric not in cached_metrics:
+            cached_metrics[metric] = metrics[metric]
+    
+    res = session_manager.patch_session(session.session_id, {"metrics":cached_metrics})
+    
+    return res
+            
+    
+
+
+
 
     

@@ -70,7 +70,7 @@ class SessionManager:
                 
             session.data.update(partial_data)
             session.save()
-            return {"status":0, "message":"Session Found", "payload":session }
+            return {"status":0, "message":"Session patched", "payload":session }
         except ObjectDoesNotExist:
             return {"status":1, "message":"Session Not Found"}
         except Exception as e:

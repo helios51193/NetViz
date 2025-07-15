@@ -41,6 +41,8 @@ export interface GraphStyle {
     edge_style: "solid" | "dashed" | "dotted",
     edge_width:number,
     highlighted_node_color:string
+    min_size:number,
+    max_size:number,
 }
 
 export interface NetworkNodesEdges {
@@ -110,4 +112,9 @@ export interface NodeInfo {
         label: string | number;
         value: string | number;
     }[];
+}
+export interface Metrics{
+    [key:string | number ] : {
+        [key :string | number] : string | number | boolean 
+    }
 }

@@ -8,7 +8,7 @@ from django.views.decorators.http import require_POST
 from networkvisualizer.utilities.graph_utils import load_cyto_graph,generate_edge_node_properties, generate_node_edge_list
 from networkvisualizer.utilities.graph_utils import extract_layout_options, get_basic_data, load_excel_graph, get_layouts, generate_node_selected_metrics,get_centrality_types
 from networkvisualizer.utilities.session_manager import SessionManager
-from network_visualization_manager.utilities.utils import extract_preferences, extract_analytics_metadata
+from network_visualization_manager.utilities.utils import extract_preferences, extract_analytics_metadata, generate_node_metrics, cache_generated_metrics
 
 session_manager = SessionManager()
 
@@ -192,4 +192,28 @@ def analytics_metadata(request, session_id):
         return JsonResponse({"status":1,
                             "message":f"Error in getting analytics metadata {e}", "payload":{} })
     
+@require_POST
+def generate_metrics(request, session_id):
 
+    try:
+        session = session_manager.get_session(session_id)
+        if session['status'] == 1:
+            raise Exception("Session not found")
+
+        session = session['payload']
+
+        size_metric = request.POST.get("size","")
+        color_metric = request.POST.get("color","")
+        shape_metric = request.POST.get("shape","")
+
+        res = generate_node_metrics(session.data, [size_metric,shape_metric,color_metric])
+        session_res = cache_generated_metrics(session_manager, session, res['payload'])
+        print(session_res)
+        if session_res['status'] != 0:
+            return {"status":1, "message":f"Error caching metrics for seeeion {session_id} {session_res['message']}"}
+
+        return JsonResponse(res)
+    except Exception as e:
+        print(f"{traceback.format_exc()}")
+        return JsonResponse({"status":1,
+                            "message":f"Error in getting analytics metadata {e}", "payload":{} })
