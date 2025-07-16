@@ -12,7 +12,7 @@ export interface Node{
 }
 
 export interface LegendItem{
-    label:string | number,
+    label:string | number | boolean,
     color:string,
     selected:boolean
 }

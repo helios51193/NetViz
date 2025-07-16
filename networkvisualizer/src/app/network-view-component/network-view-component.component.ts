@@ -290,8 +290,11 @@ export class NetworkViewComponentComponent {
 
   onApplyAnalytics(){
     this.graphService.selectedSizeOption = this.selectedSize();
-    const metricsFormData = new FormData()
-    metricsFormData.append('size', this.selectedSize())
+    this.graphService.selectedColorOption = this.selectedColor();
+    this.graphService.selectedshapeOption = this.selectedShape();
+    const metricsFormData = new FormData();
+    metricsFormData.append('size', this.selectedSize());
+    metricsFormData.append('color', this.selectedColor());
     const sub = this.networkService.getMetrics(this.session_id, metricsFormData).subscribe({
       next:(res:any) => {
           if(res['status'] != 0){

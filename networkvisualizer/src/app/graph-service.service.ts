@@ -331,91 +331,6 @@ export class GraphService {
     return cy;
   }
 
-  
-
-  public updateNodeColors(cy: any) {
-    const nodes: Node[] = this.graph_data?.nodes || [];
-    const property = this.colorBy();
-    if (nodes.length === 0 || !property) {
-      return cy;
-    }
-    if (property === 'none') {
-      nodes.forEach((node: Node) => {
-        const nodeId = node.id;
-        const color = this.defaultColor;
-        const cyNode = cy.getElementById(nodeId);
-        if (cyNode && cyNode.length > 0) {
-          cyNode.style('background-color', color);
-        }
-        this.legends.set([]);
-        this.selectedLegendLabel = "";
-      });
-    } else {
-      const uniqueValues = Array.from(
-        new Set(nodes.map((node: Node) => node['attributes'][property]))
-      );
-      const items: LegendItem[] = [];
-      const valueToColor: { [key: string]: string } = {};
-      uniqueValues.forEach((val, idx) => {
-        valueToColor[val] = this.colorPalette[idx % this.colorPalette.length];
-        items.push({
-          label: val,
-          color: valueToColor[val],
-          selected: val == this.selectedLegendLabel ? true : false, // Set to true for defaul
-        });
-      });
-      nodes.forEach((node: Node) => {
-        const nodeId = node.id;
-        const color = valueToColor[node['attributes'][property]];
-        const cyNode = cy.getElementById(nodeId);
-        if (cyNode && cyNode.length > 0) {
-          cyNode.style('background-color', color);
-        }
-      });
-      this.legends.set(items);
-    }
-    return cy;
-  }
-
-
-  public updateColor(cy: any, property: string, nodes: Node[]) {
-    if (property === 'none') {
-      nodes.forEach((node: Node) => {
-        const nodeId = node.id;
-        const color = this.defaultColor;
-        const cyNode = cy.getElementById(nodeId);
-        if (cyNode && cyNode.length > 0) {
-          cyNode.style('background-color', color);
-        }
-        this.legends.set([]);
-      });
-    } else {
-      const uniqueValues = Array.from(
-        new Set(nodes.map((node: Node) => node['attributes'][property]))
-      );
-      const items: LegendItem[] = [];
-      const valueToColor: { [key: string]: string } = {};
-      uniqueValues.forEach((val, idx) => {
-        valueToColor[val] = this.colorPalette[idx % this.colorPalette.length];
-        items.push({
-          label: val,
-          color: valueToColor[val],
-          selected: false,
-        });
-      });
-      nodes.forEach((node: Node) => {
-        const nodeId = node.id;
-        const color = valueToColor[node['attributes'][property]];
-        const cyNode = cy.getElementById(nodeId);
-        if (cyNode && cyNode.length > 0) {
-          cyNode.style('background-color', color);
-        }
-      });
-      this.legends.set(items);
-    }
-    cy.style().update();
-  }
-
   public resetLegends() {
     this.selectedLegendLabel = "";
     if (this.legends().length > 0) {
@@ -476,6 +391,7 @@ export class GraphService {
     // Initializing Default 
     cy.style(this.createGraphStyleSheet()).update();
     cy = this.updateNodeSizes(cy);
+    cy = this.updateNodeColors(cy);
     const filtered_ids = this.generateFilteredList();
     cy = this.updateNodeOpacity(cy, filtered_ids);
     cy.layout({ 'name': 'preset' }).run();
@@ -541,12 +457,48 @@ export class GraphService {
         node.style('height', scaledSize);
       });
     }
-    
-    
-    
-    
-    
     return cy
+  }
+
+  private updateNodeColors(cy:any){
+
+    if (this.selectedColorOption == ""){
+       cy.nodes().forEach((node: any) => {
+        node.style('background-color', this.graphStyle.node_width);
+      });
+      this.legends.set([]);
+    }else{
+      console.log("color by " + this.selectedColorOption)
+      const colorOption = this.nodeMetrics[this.selectedColorOption];
+      console.log(this.nodeMetrics)
+      console.log(colorOption)
+      // Extract all the unique values frommthe colorOptions
+      const uniqueValues = new Set(Object.values(colorOption));
+      
+      // Create a color map
+      const colorMap = new Map();
+      let index = 0;
+      uniqueValues.forEach(value => {
+        colorMap.set(value, this.colorPalette[index]);
+        index++;
+      });
+      // Create list of LegendItems and set the legend to that list
+      const legendItems: LegendItem[] = [];
+      uniqueValues.forEach(value => {
+        legendItems.push({
+          label: value,
+          color: colorMap.get(value),
+          selected: false,
+        });
+      });
+      this.legends.set(legendItems);
+
+      cy.nodes().forEach((node: any) => {
+        node.style('background-color', colorMap.get(colorOption[node.id()]));
+      });
+    }
+    return cy;
+
   }
 
 
