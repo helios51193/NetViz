@@ -3,6 +3,7 @@ from typing import List
 import traceback
 import networkx as nx
 from networkvisualizer.utilities.session_manager import SessionManager
+from network_loading_manager.models import GraphSession
 def extract_preferences(request, session_data):
     
     preferences = session_data.get('preferences',{})    
@@ -81,19 +82,60 @@ def generate_node_metrics(session_data, metrics:List[str]):
     
 
 
+def save_analytics_preferences(session_manager:SessionManager, session:GraphSession, analytics_preferences:dict):
 
-def cache_generated_metrics(session_manager:SessionManager, session, metrics):
+    cached_analytics_preferences = {
+        "size":"none",
+        "shape":"none",
+        "color":"none"
+    }
+    if "analytics" in session.data['preferences']:
+        cached_analytics_preferences = session.data['preferences']['analytics']
+
+    if "size" in analytics_preferences:
+         cached_analytics_preferences['size'] = analytics_preferences['size']
+    if "shape" in analytics_preferences:
+        cached_analytics_preferences['shape'] = analytics_preferences['shape']
+    if "color" in analytics_preferences:
+        cached_analytics_preferences['color'] = analytics_preferences['color']
+    
+    session.data['preferences']['analytics'] = cached_analytics_preferences
+
+    res = session_manager.update_session(session.session_id, session.data)
+    
+    return res
+
+
+def cache_generated_metrics(session_manager:SessionManager, session:GraphSession, analytics:dict ,metrics:dict):
 
     cached_metrics = {}
+    cached_analytics_preferences = {
+        "size":"none",
+        "shape":"none",
+        "color":"none"
+    }
     if "metrics" in session.data:
-        metrics = session.data['metrics']
+        cached_metrics = session.data['metrics']
 
-
+    if "analytics" in session.data['preferences']:
+        cached_analytics_preferences = session.data['preferences']['analytics']
+    
     for metric in metrics:
         if metric not in cached_metrics:
             cached_metrics[metric] = metrics[metric]
     
-    res = session_manager.patch_session(session.session_id, {"metrics":cached_metrics})
+
+    if "size" in analytics:
+         cached_analytics_preferences['size'] = analytics['size'] if analytics['size'] != "" else "none"
+    if "shape" in analytics:
+        cached_analytics_preferences['shape'] = analytics['shape'] if analytics['shape'] != "" else "none"
+    if "color" in analytics:
+        cached_analytics_preferences['color'] = analytics['color'] if analytics['color'] != "" else "none"
+    
+    session.data['preferences']['analytics'] = cached_analytics_preferences
+    session.data['metrics'] = cached_metrics
+
+    res = session_manager.update_session(session.session_id, session.data)
     
     return res
             

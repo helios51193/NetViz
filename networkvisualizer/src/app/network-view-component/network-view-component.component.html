@@ -284,14 +284,24 @@
                                 </div>
                             </div>
                         </div>
-                        @if(legends().length > 0){
+                        @if(colorLegends().length > 0 || shapeLegends().length > 0){
                             <div class="card card-body mt-1">
                                 <div class="card-text" id="legend">
-                                    @for(legendItem of legends(); track $index){
-                                        <button type="button" class="legend-item btn btn-outline-secondary" [ngClass]="{'highlighted': legendItem.selected}" (click)="selectLegend(legendItem.label)">
-                                            <span class="legend-item-color" [style.backgroundColor]="legendItem.color"></span>
-                                            <span class="legend-item-label">{{legendItem.label}}</span>
-                                        </button>
+                                    @if(colorLegends().length > 0){
+                                        @for(legendItem of colorLegends() ; track $index){
+                                            <button type="button" class="legend-item btn btn-outline-secondary" [ngClass]="{'highlighted': legendItem.selected}">
+                                                <span class="legend-item-color" [style.backgroundColor]="legendItem.color"></span>
+                                                <span class="legend-item-label">{{legendItem.label}}</span>
+                                            </button>
+                                        }
+                                    }
+                                    @if(shapeLegends().length > 0){
+                                        @for(legendItem of shapeLegends() ; track $index){
+                                            <button type="button" class="legend-item btn btn-outline-secondary" [ngClass]="{'highlighted': legendItem.selected}">
+                                                <span class="legend-item-shape" [ngClass]="'shape-' + legendItem.shape"></span>
+                                                <span class="legend-item-label">{{legendItem.label}}</span>
+                                            </button>
+                                        }
                                     }
                                 </div>
                             </div>

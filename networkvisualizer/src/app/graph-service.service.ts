@@ -34,7 +34,8 @@ export class GraphService {
   graph_data: NetworkNodesEdges = {} as NetworkNodesEdges;
   sizeBy = signal<string>('none');
   colorBy = signal<string>('none');
-  legends = signal<LegendItem[]>([]);
+  colorLegends = signal<LegendItem[]>([]);
+  shapeLegends = signal<LegendItem[]>([]);
   selectedLegendLabel: string | number = "";
   selectedNode = signal<NodeInfo>({ "id": "", "properties": [] });
   colorPalette = [
@@ -139,6 +140,12 @@ export class GraphService {
     '#fed9a6',
     '#ffffcc',
   ];
+  shapePalette = ['ellipse',
+    'triangle','round-triangle','rectangle',
+  'round-rectangle','bottom-round-rectangle','cut-rectangle',
+  'barrel','rhomboid','right-rhomboid','diamond','round-diamond',
+  'pentagon','round-pentagon','hexagon','round-hexagon',
+  'concave-hexagon','heptagon','round-heptagon','octagon','round-octagon','star','tag','round-tag', 'vee']
   defaultColor = '#0074D9';
   defaultSize = 100;
   selectedFilter:Filter = { name:"", display_name:"", type:"", operator:"equal to"};
@@ -333,49 +340,14 @@ export class GraphService {
 
   public resetLegends() {
     this.selectedLegendLabel = "";
-    if (this.legends().length > 0) {
-      this.legends().forEach(legendItem => {
+    if (this.colorLegends().length > 0) {
+      this.colorLegends().forEach(legendItem => {
         legendItem.selected = false;
       });
     }
   }
   public resetNode() {
     this.selectedNode.set({ "id": "", "properties": [] })
-  }
-
-  public updateNodeOpacityByLegend(cy: any) {
-    const selectedLegend = this.legends().find(legend => legend.selected);
-    var selectedColor: string = ""
-    if (selectedLegend) {
-      selectedColor = selectedLegend.color;
-    }
-    console.log(this.legends())
-    cy.nodes().forEach((node: any) => {
-      const nodeColor = node.style('background-color');
-      if (selectedColor === "") {
-        node.style('opacity', 1);
-      } else if (!this.isColorEquivalent(nodeColor, selectedColor)) {
-        node.style('opacity', 0.25); // Dim nodes not matching the selected color
-      } else {
-        node.style('opacity', 1); // Restore opacity for matching nodes
-      }
-    });
-
-    cy.edges().forEach((edge: any) => {
-      const sourceNode = edge.source();
-      const targetNode = edge.target();
-      const sourceColor = sourceNode.style('background-color');
-      const targetColor = targetNode.style('background-color');
-
-      if (selectedColor === "") {
-        edge.style('opacity', 1);
-      } else if (this.isColorEquivalent(sourceColor, selectedColor) && this.isColorEquivalent(targetColor, selectedColor)) {
-        edge.style('opacity', 1);
-      } else {
-        edge.style('opacity', 0.1);
-      }
-    });
-    return cy;
   }
 
 
@@ -392,30 +364,13 @@ export class GraphService {
     cy.style(this.createGraphStyleSheet()).update();
     cy = this.updateNodeSizes(cy);
     cy = this.updateNodeColors(cy);
+    cy = this.updateNodeShapes(cy);
     const filtered_ids = this.generateFilteredList();
     cy = this.updateNodeOpacity(cy, filtered_ids);
     cy.layout({ 'name': 'preset' }).run();
     cy.zoom(currentZoom);
     cy.pan(currentPan);
 
-  }
-
-  private isColorEquivalent(rgbString: string, hexString: string): boolean {
-    // Extract RGB values from the string
-    const rgbMatch = rgbString.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
-    if (!rgbMatch) {
-      throw new Error('Invalid RGB format');
-    }
-
-    const r = parseInt(rgbMatch[1], 10);
-    const g = parseInt(rgbMatch[2], 10);
-    const b = parseInt(rgbMatch[3], 10);
-
-    // Convert RGB to hex
-    const rgbHex = this.rgbToHex(r, g, b);
-
-    // Compare the hex strings
-    return rgbHex.toLowerCase() === hexString.toLowerCase();
   }
 
   private updateNodeSizes(cy:any){
@@ -464,14 +419,12 @@ export class GraphService {
 
     if (this.selectedColorOption == ""){
        cy.nodes().forEach((node: any) => {
-        node.style('background-color', this.graphStyle.node_width);
+        node.style('background-color', this.graphStyle.node_color);
       });
-      this.legends.set([]);
+      this.colorLegends.set([]);
     }else{
       console.log("color by " + this.selectedColorOption)
       const colorOption = this.nodeMetrics[this.selectedColorOption];
-      console.log(this.nodeMetrics)
-      console.log(colorOption)
       // Extract all the unique values frommthe colorOptions
       const uniqueValues = new Set(Object.values(colorOption));
       
@@ -491,7 +444,7 @@ export class GraphService {
           selected: false,
         });
       });
-      this.legends.set(legendItems);
+      this.colorLegends.set(legendItems);
 
       cy.nodes().forEach((node: any) => {
         node.style('background-color', colorMap.get(colorOption[node.id()]));
@@ -499,6 +452,41 @@ export class GraphService {
     }
     return cy;
 
+  }
+
+  private updateNodeShapes(cy:any){
+
+    if (this.selectedshapeOption == ""){
+      cy.nodes().forEach((node: any) => {
+        node.style('shape', this.graphStyle.node_shape);
+      });
+      this.shapeLegends.set([]);
+    }else{
+      const shapeOptions = this.nodeMetrics[this.selectedshapeOption];
+      // Extract all the unique values frommthe colorOptions
+      const uniqueValues = new Set(Object.values(shapeOptions));
+      const shapeMap = new Map();
+      let index = 0;
+      uniqueValues.forEach(value => {
+        shapeMap.set(value, this.shapePalette[index]);
+        index++;
+      });
+      cy.nodes().forEach((node: any) => {
+        node.style('shape', shapeMap.get(shapeOptions[node.id()]));
+      });
+
+      const legendItems: LegendItem[] = [];
+      uniqueValues.forEach(value => {
+        legendItems.push({
+          label: value,
+          shape: shapeMap.get(value),
+          selected: false,
+        });
+      });
+      this.shapeLegends.set(legendItems);
+    }
+
+    return cy;
   }
 
 
@@ -509,106 +497,6 @@ export class GraphService {
     }).join('');
   }
 
-
-  private highlightNodesAndEdges(cy: any) {
-
-    var nodeId = ""
-    if (this.selectedNode().id != "") {
-      nodeId = this.selectedNode().id
-    }
-    var legendColor = ""
-    const selectedLegend = this.legends().find(legendItem => legendItem.selected)
-    if (selectedLegend) {
-      legendColor = selectedLegend.color
-    }
-    
-    if (nodeId == "" && legendColor == ""){
-      cy.nodes().forEach((node: any) => {
-        node.style('opacity', 1);
-      });
-      cy.edges().forEach((edge: any) => {
-        edge.style('opacity', 1);
-      });
-      return cy;
-    }
-    // Dim All
-    console.log(nodeId)
-    console.log(legendColor)
-    cy.nodes().forEach((node: any) => {
-      node.style('opacity', 0.1);
-    });
-    cy.edges().forEach((edge: any) => {
-      edge.style('opacity', 0.1);
-    });
-
-    if (nodeId != "") {
-      const selectedNode = cy.getElementById(nodeId);
-      if (selectedNode) {
-        selectedNode.style('opacity', 1);
-        const connectedEdges = selectedNode.connectedEdges();
-        connectedEdges.forEach((edge: any) => {
-          const sourceNode = edge.source();
-          const targetNode = edge.target();
-          
-          if (legendColor != "") {
-            const sourceColor = sourceNode.style('background-color')
-            const targetColor = targetNode.style('background-color')
-            
-            if (this.isColorEquivalent(sourceColor, legendColor)) {
-              sourceNode.style('opacity', 1);
-            }
-            if (this.isColorEquivalent(targetColor, legendColor)) {
-              targetNode.style('opacity', 1);
-            }
-              
-            
-            if (sourceNode.id() == nodeId && this.isColorEquivalent(targetColor, legendColor)){
-              edge.style('opacity', 1)
-            }else if(targetNode.id() == nodeId && this.isColorEquivalent(sourceColor, legendColor)){
-              edge.style('opacity', 1)
-            }
-
-            
-            // if(sourceNode.id() == nodeId && this.isColorEquivalent(targetColor, legendColor)){
-            //   edge.style('opacity', 1)
-            // }else if(targetNode.id() == nodeId && this.isColorEquivalent(targetColor, legendColor)){
-            //   edge.style('opacity', 1)
-            // }else if(targetNode.id() == nodeId && this.isColorEquivalent(sourceColor, legendColor)){
-            //   edge.style('opacity', 1)
-            // }
-            // else if (targetNode.id() == nodeId && (this.isColorEquivalent(targetColor, legendColor) || this.isColorEquivalent(sourceColor, legendColor)) ){
-            //   edge.style('opacity', 1)
-            // }
-
-          }
-          else {
-            edge.style('opacity', 1)
-            sourceNode.style('opacity', 1);
-            targetNode.style('opacity', 1);
-          }
-          
-        });
-      } 
-    }else if (legendColor != "") {
-      cy.edges().forEach((edge: any) => {
-        const sourceColor = edge.source().style('background-color')
-        const targetColor = edge.target().style('background-color')
-        if (this.isColorEquivalent(sourceColor, legendColor) && this.isColorEquivalent(targetColor, legendColor))
-          edge.style('opacity', 1);
-          if (this.isColorEquivalent(sourceColor, legendColor)){
-            edge.source().style('opacity', 1);
-          }
-          if(this.isColorEquivalent(targetColor, legendColor)){
-            edge.target().style('opacity', 1);
-          }
-          
-          
-          
-      });
-    }
-
-    return cy;
-  }
 
   updateNodeOpacity(cy: cytoscape.Core, nodeIds: string[]) {
   

@@ -57,7 +57,8 @@ export class NetworkViewComponentComponent {
   selectedShape = signal<string>("")
   selectedSize = signal<string>("")
   selectedColor = signal<string>("")
-  legends = computed(() => { return this.graphService.legends() });
+  colorLegends = computed(() => { return this.graphService.colorLegends() });
+  shapeLegends = computed(() => { return this.graphService.shapeLegends() });
   inspectorOptions = computed(() => { return this.preferenceService.inspectorOptions() });
   session_name = signal<string>("");
   currentSizeOption = signal<string>("none");
@@ -295,7 +296,8 @@ export class NetworkViewComponentComponent {
     const metricsFormData = new FormData();
     metricsFormData.append('size', this.selectedSize());
     metricsFormData.append('color', this.selectedColor());
-    const sub = this.networkService.getMetrics(this.session_id, metricsFormData).subscribe({
+    metricsFormData.append('shape',this.selectedShape());
+    this.networkService.getMetrics(this.session_id, metricsFormData).subscribe({
       next:(res:any) => {
           if(res['status'] != 0){
             console.log(res)
@@ -308,26 +310,39 @@ export class NetworkViewComponentComponent {
     })
   }
   onResetAnalytics(){
-    this.selectedColor.set("");
-    this.selectedSize.set("");
-    this.selectedShape.set("");
-    this.graphService.selectedSizeOption = "";
-    this.graphService.selectedColorOption = "";
-    this.graphService.selectedshapeOption = "";
-    this.graphService.updateGraph(this.cy);
+
+    this.networkService.resetAnalyticsPreferences(this.session_id).subscribe({
+      next:(res:any) => {
+        if(res['status'] != 0){
+          console.log(res)
+          return;
+        }
+        this.selectedColor.set("");
+        this.selectedSize.set("");
+        this.selectedShape.set("");
+        this.graphService.selectedSizeOption = "";
+        this.graphService.selectedColorOption = "";
+        this.graphService.selectedshapeOption = "";
+        this.graphService.updateGraph(this.cy);
+        console.log(res);
+      }
+    })
+
+
+    
   }
   initializeCentralityModalValues(){
 
   }
   selectLegend(label:string | number){
-    const legends:LegendItem[] = this.graphService.legends();
+    const legends:LegendItem[] = this.graphService.colorLegends();
     legends.forEach(legendItem => {
       if (legendItem.label === label) {
         this.graphService.selectedLegendLabel = label !=  this.graphService.selectedLegendLabel ? label : "";
       }
      
     });
-    this.graphService.legends.set(legends);
+    this.graphService.colorLegends.set(legends);
     this.graphService.updateGraph(this.cy);
   }
 

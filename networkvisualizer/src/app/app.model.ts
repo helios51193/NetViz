@@ -13,9 +13,11 @@ export interface Node{
 
 export interface LegendItem{
     label:string | number | boolean,
-    color:string,
+    color?:string,
+    shape?:string,
     selected:boolean
 }
+
 
 export interface Edge{
     id:string,

@@ -15,6 +15,7 @@
     margin-right: 10px;
     margin-bottom: 10px;
     width: calc(100% / 8 - 10px); /* Adjust width for 6 items per row */
+    color: whitesmoke;
 }
 
 .legend-item-color {
@@ -32,4 +33,52 @@
 .highlighted {
     background-color: #f0f8ff; /* Example highlight color */
     border-color: #007bff; /* Example border color */
+}
+.legend-item-shape {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    background-color: #4363d8;
+}
+
+.shape-ellipse {
+    border-radius: 50%;
+}
+
+.shape-triangle {
+    width: 0;
+    height: 0;
+    border-left: 9px solid transparent;
+    border-right: 9px solid transparent;
+    border-bottom: 18px solid #4363d8;
+    background-color: transparent;
+}
+
+.shape-rectangle {
+    border-radius: 0;
+}
+
+.shape-diamond {
+    transform: rotate(45deg);
+}
+
+.shape-hexagon {
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+.shape-star {
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+.shape-pentagon {
+    clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+}
+
+.shape-octagon {
+    clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+}
+
+.shape-vee {
+    clip-path: polygon(50% 0%, 100% 100%, 50% 70%, 0% 100%);
 }

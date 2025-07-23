@@ -22,6 +22,7 @@ export class NetworkService {
   setPreferencesApi = this.baseUrl + 'graph/set_preferences';
   deleteSessionApi = this.baseUrl + 'loader/delete_session';
   getMetricsApi = this.baseUrl + "graph/generate_metrics";
+  resetAnalyticsApi = this.baseUrl + "graph/reset_analytics_preferences";
 
   httpClient = inject(HttpClient);
   network_meta_data = signal<any>({});
@@ -73,6 +74,9 @@ export class NetworkService {
   }
   deleteSession(session_id:string){
     return this.callGet(this.deleteSessionApi + "/" + session_id);
+  }
+  resetAnalyticsPreferences(session_id:string){
+    return this.callGet(this.resetAnalyticsApi + "/" + session_id);
   }
   callPost(url:string,formData:FormData){
     return this.httpClient.post(url,formData);

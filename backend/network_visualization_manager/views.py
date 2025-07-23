@@ -2,13 +2,13 @@ from pprint import pprint
 import traceback
 from django.http import JsonResponse
 from django.shortcuts import render
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_GET
 import uuid
 from django.views.decorators.http import require_POST
 from networkvisualizer.utilities.graph_utils import load_cyto_graph,generate_edge_node_properties, generate_node_edge_list
 from networkvisualizer.utilities.graph_utils import extract_layout_options, get_basic_data, load_excel_graph, get_layouts, generate_node_selected_metrics,get_centrality_types
 from networkvisualizer.utilities.session_manager import SessionManager
-from network_visualization_manager.utilities.utils import extract_preferences, extract_analytics_metadata, generate_node_metrics, cache_generated_metrics
+from network_visualization_manager.utilities.utils import extract_preferences, extract_analytics_metadata, generate_node_metrics, cache_generated_metrics, save_analytics_preferences
 
 session_manager = SessionManager()
 
@@ -206,14 +206,43 @@ def generate_metrics(request, session_id):
         color_metric = request.POST.get("color","")
         shape_metric = request.POST.get("shape","")
 
+        analytics = dict(size=size_metric, shape=shape_metric, color=color_metric)
+        
         res = generate_node_metrics(session.data, [size_metric,shape_metric,color_metric])
-        session_res = cache_generated_metrics(session_manager, session, res['payload'])
-        print(session_res)
+        session_res = cache_generated_metrics(session_manager, session, analytics, res['payload'])
+      
         if session_res['status'] != 0:
             return {"status":1, "message":f"Error caching metrics for seeeion {session_id} {session_res['message']}"}
-
+        
         return JsonResponse(res)
     except Exception as e:
         print(f"{traceback.format_exc()}")
         return JsonResponse({"status":1,
                             "message":f"Error in getting analytics metadata {e}", "payload":{} })
+
+@require_GET
+def reset_analytics_preferenced(request, session_id):
+
+    try:
+
+        session = session_manager.get_session(session_id)
+        if session['status'] == 1:
+            raise Exception("Session not found")
+
+        session = session['payload']
+
+        analytics = dict(size="", shape="", color="")
+        metrics = {}
+        session_res = cache_generated_metrics(session_manager, session, analytics, metrics)
+      
+        if session_res['status'] != 0:
+            return {"status":1, "message":f"Error caching metrics for seeeion {session_id} {session_res['message']}"}
+        
+        return JsonResponse({"status":0, "message":"analytics resetted"})
+
+
+    except Exception as e:
+        print(f"{traceback.format_exc()}")
+        return JsonResponse({"status":1,
+                            "message":f"Error in resetting analytics preferences {e}", "payload":{} })
+
