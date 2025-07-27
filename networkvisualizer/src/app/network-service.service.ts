@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { ResourceLoader } from '@angular/compiler';
 import { inject, Injectable, signal } from '@angular/core';
+import { Form } from '@angular/forms';
 import { catchError, observable, throwError } from 'rxjs';
 
 @Injectable({
@@ -23,6 +24,7 @@ export class NetworkService {
   deleteSessionApi = this.baseUrl + 'loader/delete_session';
   getMetricsApi = this.baseUrl + "graph/generate_metrics";
   resetAnalyticsApi = this.baseUrl + "graph/reset_analytics_preferences";
+  setInspectorFieldsApi = this.baseUrl + "graph/set_inspector_fields"
 
   httpClient = inject(HttpClient);
   network_meta_data = signal<any>({});
@@ -77,6 +79,9 @@ export class NetworkService {
   }
   resetAnalyticsPreferences(session_id:string){
     return this.callGet(this.resetAnalyticsApi + "/" + session_id);
+  }
+  setInspectorFields(session_id:string, formData:FormData){
+    return this.callPost(this.setInspectorFieldsApi + "/" + session_id, formData)
   }
   callPost(url:string,formData:FormData){
     return this.httpClient.post(url,formData);

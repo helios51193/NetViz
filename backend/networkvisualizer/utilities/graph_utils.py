@@ -215,7 +215,7 @@ def _analyze_edge_properties(G):
     result = []
     edges = list(G.edges)
 
-def generate_node_edge_list(session_data):
+def generate_graph_data(session_data):
  
     if 'graph' not in session_data.keys():
         return {"status":1, "message":"No graph found in session data"}
@@ -262,6 +262,13 @@ def generate_node_edge_list(session_data):
         result['edge_properties'] = session_data['edge_properties']
         result['layout'] = layout
         result['preferences'] = session_data.get('preferences',{})
+        result['metrics'] = {}
+        if result['preferences'] != {}:
+            cached_analytics = result['preferences'].get("analytics", {})
+            for metric in cached_analytics.values():
+                if metric == "none" or metric == "":
+                    continue
+                result['metrics'][metric] = session_data['metrics'][metric]
     
     return {"status":0, "message":"success", "payload":result}
 

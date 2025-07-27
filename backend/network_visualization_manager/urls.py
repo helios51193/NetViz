@@ -14,4 +14,5 @@ urlpatterns = [
     path("set_layout/<str:session_id>",csrf_exempt(views.set_layout),name="set_layout_options"),
     path("generate_metrics/<str:session_id>", csrf_exempt(views.generate_metrics), name="generate_metrics"),
     path("reset_analytics_preferences/<str:session_id>", csrf_exempt(views.reset_analytics_preferenced), name="reset_analytics_preferences"),
+    path("set_inspector_fields/<str:session_id>", csrf_exempt(views.set_inspector_fields), name="set_inspector_fields")
 ]

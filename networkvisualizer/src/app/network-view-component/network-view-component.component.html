@@ -274,7 +274,7 @@
             <ul ngbNav #nav="ngbNav" [(activeId)]="navActive" class="nav-tabs">
                 <li [ngbNavItem]="1">
                     <button ngbNavLink>
-                        {{session_name()}}
+                        {{session_name()}} &nbsp; <button type="button" class="btn btn-primary btn-sm" (click)="openModal(preferencesModal)"><i class="fa-solid fa-gear"></i></button>
                     </button>
                     <ng-template ngbNavContent>
                         <div class="card">
@@ -316,6 +316,7 @@
                 <div class="card-body"> 
                     <div class="card-title">
                         <h3>Inspector</h3>
+                        
                         <hr/>
                     </div>    
                     @if(selectedNode().id != ""){
@@ -337,20 +338,44 @@
         </div>
     </div>
 </div>
-<div class="modal fade" id="preferencesModal" tabindex="-1" aria-labelledby="preferencesModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="preferencesModalLabel">Preferences</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <!-- Modal content goes here -->
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Save changes</button>
-      </div>
-    </div>
+<!-- Template for the modal -->
+<ng-template #preferencesModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Settings</h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
   </div>
-</div>
+  <div class="modal-body">
+    <h3>Inspector Fields</h3>
+    <div class="row mt-2">
+        <div class="col-md-3">
+            Selected :
+        </div>
+        <div class="col-md-8">
+            @for(field of inspectorFields();track $index){
+                <span class=" mt-1 btn btn-info btn-sm">{{field}} 
+                    <button type="button" class="btn btn-danger btn-sm" (click)="onRemoveInspectorField(field)"><i class="fa-solid fa-sm fa-xmark"></i>
+                    </button>
+                </span> &nbsp;
+            }
+        </div>
+    </div>
+    <div class="row mt-4">
+        <div class="col-md-3">
+            All Fields :
+        </div>
+        <div class="col-md-3">
+            <select class="form-control form-control-sm"  [(ngModel)]="selectedField">
+                @for (prop of inspectorFieldsOptions(); track $index) {
+                    <option value="{{prop}}">{{prop}}</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-4">
+            <button type="button" class="btn btn-primary btn-sm" (click)="onAddInspectorField()">Add Field</button>
+        </div>
+    </div> 
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Close</button>
+  </div>
+</ng-template>

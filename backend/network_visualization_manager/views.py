@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.views.decorators.http import require_POST, require_GET
 import uuid
 from django.views.decorators.http import require_POST
-from networkvisualizer.utilities.graph_utils import load_cyto_graph,generate_edge_node_properties, generate_node_edge_list
+from networkvisualizer.utilities.graph_utils import load_cyto_graph,generate_edge_node_properties, generate_graph_data
 from networkvisualizer.utilities.graph_utils import extract_layout_options, get_basic_data, load_excel_graph, get_layouts, generate_node_selected_metrics,get_centrality_types
 from networkvisualizer.utilities.session_manager import SessionManager
 from network_visualization_manager.utilities.utils import extract_preferences, extract_analytics_metadata, generate_node_metrics, cache_generated_metrics, save_analytics_preferences
@@ -67,7 +67,7 @@ def get_graph(request,session_id):
         
         session = session['payload']
             
-        node_edge_list = generate_node_edge_list(session.data)
+        node_edge_list = generate_graph_data(session.data)
         
         if node_edge_list['status'] != 0:
             raise Exception("Error in generating node edge list")
@@ -246,3 +246,30 @@ def reset_analytics_preferenced(request, session_id):
         return JsonResponse({"status":1,
                             "message":f"Error in resetting analytics preferences {e}", "payload":{} })
 
+@require_POST
+def set_inspector_fields(request, session_id):
+    try:
+        session = session_manager.get_session(session_id)
+        if session['status'] == 1:
+            raise Exception("Session not found")
+
+        session = session['payload']
+        inspector_fields = request.POST.get('inspector_fields')
+        if inspector_fields == "":
+            inspector_fields = []
+        else:
+            inspector_fields = inspector_fields.split(";")
+
+        session.data['preferences']['inspector_fields'] = inspector_fields
+        res = session_manager.update_session(session_id=session_id, new_data=session.data )
+        
+        if res['status'] != 0:
+            return {"status":1, "message":f"Error caching metrics for seeeion {session_id} {res['message']}"}
+
+        
+        return JsonResponse({"status":0, "message":"Inspector fields set successfully"})
+    
+    except:
+        print(f"{traceback.format_exc()}")
+        return JsonResponse({"status":1,
+                            "message":f"Error in setting inspector fields {e}", "payload":{} })

@@ -29,7 +29,6 @@ export class NetworkViewComponentComponent {
   private graphService = inject(GraphService);
   private destroyRef = inject(DestroyRef);
   private modalBsService = inject(NgbModal);
-  private modalService = inject(ModalSevice);
   private preferenceService = inject(PreferenceService);
   
   @ViewChild('CentralitiesModal') centralityModalRef!: TemplateRef<any>;
@@ -37,15 +36,13 @@ export class NetworkViewComponentComponent {
   session_id = this.activatedRoute.snapshot.params['session_id'];
   errorMessage: string = '';
   cy: any;
-  inspectorFields:InspectorFields = {
-    field1:"none", 
-    field2:"none",
-    field3:"none",
-    field4:"none",
-  }
-  get inspectorFieldKeys():string[]  {
-    return Object.keys(this.inspectorFields);
-  }
+  inspectorFields = signal<string[]>([])
+
+  inspectorFieldsOptions = computed(() => {
+    // Return the node properties name if they are not present in the inspectorfields 
+    return this.graphService.graph_data.node_properties.map((nodeProperty) => nodeProperty.name);
+  });
+  
 
   networkLayouts = computed(() => { return this.networkService.layout_options() });
   currentLayout = signal<Layout>({ name: 'random', display_name: 'Random', options: [{ name: 'seed', display_name: 'Seed', value: 42 }] });
@@ -69,15 +66,12 @@ export class NetworkViewComponentComponent {
   filter:Filter = { name:"", display_name:'', type:"", operator:'equal to'}
   filterOperators:string[] = []
   filterValue = signal<string>("");
+  selectedField = signal<string>("");
   ngOnInit() {
 
     this.initialize_graph_and_settings();
     
-    const centralitiesSub = this.modalService.openCentralitiesModal$.subscribe(() => {
-      this.initializeCentralityModalValues();
-      this.modalBsService.open(this.centralityModalRef, { size: 'lg', centered:true, backdrop:'static' });
-    })
-    
+   
     const layout_subscription = this.networkService.getLayoutOptions().subscribe({
       next: (res: any) => {
         if (res.status != 0) {
@@ -107,7 +101,6 @@ export class NetworkViewComponentComponent {
     })
     this.destroyRef.onDestroy(() => {
       layout_subscription.unsubscribe();
-      centralitiesSub.unsubscribe();
       analytics_subscription.unsubscribe();
     });
     
@@ -126,8 +119,26 @@ export class NetworkViewComponentComponent {
         this.graphService.generateFilterOptions();
         this.graphService.setGraphStyles(res['payload']['preferences']);
         this.graphStyle = this.graphService.graphStyle;
+        this.graphService.nodeMetrics =res['payload']['metrics'];
+        
+        
+        if("preferences" in res['payload']){
+          if('analytics' in res['payload']['preferences']){
+            const cached_analytics = res['payload']['preferences']['analytics']
+            this.selectedColor.set(cached_analytics['color'] == "none" || cached_analytics['color'] == "" ? "" : cached_analytics['color']); 
+            this.selectedSize.set(cached_analytics['size'] == "none" || cached_analytics['size'] == "" ? "" : cached_analytics['size']);
+            this.selectedShape.set(cached_analytics['shape'] == "none" || cached_analytics['shape'] == "" ? "" : cached_analytics['shape']);
+            this.graphService.selectedColorOption = this.selectedColor();
+            this.graphService.selectedSizeOption = this.selectedSize();
+            this.graphService.selectedshapeOption = this.selectedShape();
+          }
+          if("inspector_fields" in res["payload"]["preferences"]){
+            this.inspectorFields.set(res["payload"]["preferences"]["inspector_fields"]);
+          }
+        }
         this.setLayout(this.graphService.graph_data['layout']);
         this.generateGraph();
+        this.updateGraph(this.cy);
       },
     });
   }
@@ -326,13 +337,7 @@ export class NetworkViewComponentComponent {
         this.graphService.updateGraph(this.cy);
         console.log(res);
       }
-    })
-
-
-    
-  }
-  initializeCentralityModalValues(){
-
+    });
   }
   selectLegend(label:string | number){
     const legends:LegendItem[] = this.graphService.colorLegends();
@@ -363,7 +368,7 @@ export class NetworkViewComponentComponent {
         id: nodeId,
         properties: []
       }
-      Object.values(this.preferenceService.inspectorFields).forEach((key) => {
+      this.inspectorFields().forEach((key) => {
         if (key == "none") {
           return;
         }
@@ -372,8 +377,55 @@ export class NetworkViewComponentComponent {
           value: selectedNode['attributes'][key] || ""
         })
       });
+
+
       this.graphService.selectedNode.set(nodeInfo);
+      console.log(this.graphService.selectedNode());
     }
-    this.graphService.updateGraph(this.cy);
+  }
+  openModal(content: TemplateRef<any>) {
+    this.modalBsService.open(content,  { backdrop: 'static', centered: true });
+  }
+  onAddInspectorField(){
+      //add the selected field to the inspectedFields signal
+      const fields = this.inspectorFields()
+      if (fields.includes(this.selectedField()) || ! this.selectedField()){
+        return;
+      }
+      fields.push(this.selectedField());
+      this.inspectorFields.set(fields)
+      const formData = new FormData();
+      // convert the list of inspector fields into a string seperated by semi-colon
+      const inspectorFieldsString = fields.join(";");
+      formData.append("inspector_fields",inspectorFieldsString);
+      this.networkService.setInspectorFields(this.session_id, formData).subscribe({
+        next: (res: any) => {
+          if (res.status != 0) {
+            this.errorMessage = res.message;
+            return;
+          }
+          console.log(res);
+        },
+      });
+  }
+  onRemoveInspectorField(field:string){
+    const fields = this.inspectorFields();
+    const index = fields.indexOf(field);
+    if (index !== -1) {
+      fields.splice(index, 1);
+    }
+    this.inspectorFields.set(fields);
+    const formData = new FormData();
+    const inspectorFieldsString = fields.join(";");
+    formData.append("inspector_fields",inspectorFieldsString);
+    this.networkService.setInspectorFields(this.session_id, formData).subscribe({
+      next: (res: any) => {
+        if (res.status != 0) {
+          this.errorMessage = res.message;
+          return;
+        }
+        console.log(res);
+      },
+    });
   }
 }
