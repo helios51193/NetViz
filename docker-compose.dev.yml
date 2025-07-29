@@ -1,7 +1,6 @@
 services:
   backend:
     build: ./backend
-    container_name: django-backend
     ports:
       - "8000:8000"
     volumes:
@@ -10,8 +9,9 @@ services:
       - DJANGO_SETTINGS_MODULE=networkvisualizer.settings
 
   frontend:
-    build: ./networkvisualizer
-    container_name: angular-frontend
+    build:
+      context: ./networkvisualizer
+      dockerfile: Dockerfile.dev
     ports:
       - "4200:80"
     depends_on:

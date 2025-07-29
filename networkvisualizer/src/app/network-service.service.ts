@@ -1,15 +1,13 @@
 import { HttpClient } from '@angular/common/http';
-import { ResourceLoader } from '@angular/compiler';
 import { inject, Injectable, signal } from '@angular/core';
-import { Form } from '@angular/forms';
-import { catchError, observable, throwError } from 'rxjs';
+import { environment } from '../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class NetworkService {
 
-  baseUrl = 'http://localhost:8000/';
+  baseUrl = environment.apiUrl;
   uploadCytoApi = this.baseUrl + 'loader/upload_cyto';
   uploadExcelApi = this.baseUrl + 'loader/upload_excel';
   getGraphConfigApi = this.baseUrl + 'loader/get_graph_config';

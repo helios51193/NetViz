@@ -59,6 +59,7 @@ ROOT_URLCONF = 'networkvisualizer.urls'
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:4200',
 ]
+ALLOWED_HOSTS = ['backend', 'localhost', '127.0.0.1', 'your-ec2-public-ip']
 
 
 TEMPLATES = [
