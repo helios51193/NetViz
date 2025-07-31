@@ -82,9 +82,6 @@ export class NetworkConfigureComponentComponent {
           this.errorMessage = res.message;
           return;
         }
-        console.log(res);
-        console.log(res.payload['properties']['node_properties']);
-        console.log(res.payload['properties']['edge_properties']);
         this.networkService.network_edge_properties.set(res.payload['properties']['edge_properties']);
         this.networkService.network_node_properties.set(res.payload['properties']['node_properties']);
         this.networkService.network_meta_data.set(res.payload['properties']['meta']);
@@ -139,7 +136,6 @@ export class NetworkConfigureComponentComponent {
     .filter((attrb:any) => attrb.keep)
     .map((attrb:any) => attrb.name);
 
-    console.log(selected_node_attributes)
 
     const selected_edge_attributes = this.networkService.network_edge_properties()
     .filter((attrb:any) => attrb.keep)
@@ -151,16 +147,13 @@ export class NetworkConfigureComponentComponent {
 
     const sub = this.networkService.setGraphConfig(this.session_id,formData).subscribe({
       next:(res:any) =>{
-        console.log(res);
         if (res.status!= 0){
           this.errorMessage = res.message;
           return;   
         }
-        console.log(res);
         this.router.navigate(['/graph', res['payload']['session_id']]);
       },
       error:(err:any) =>{
-        console.log(err);
         this.errorMessage = "Some Error occured while setting the config"
       }
 

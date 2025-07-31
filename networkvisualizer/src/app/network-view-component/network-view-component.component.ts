@@ -78,7 +78,6 @@ export class NetworkViewComponentComponent {
           this.networkService.layout_options.set([{ name: 'random', display_name: 'Random', options: {} }]);
           return;
         }
-        console.log(res);
         this.networkService.layout_options.set(res.payload);
         this.layoutFormGenerated.set(true);
       },
@@ -113,7 +112,6 @@ export class NetworkViewComponentComponent {
           this.errorMessage = res.message;
           return;
         }
-        console.log(res);
         this.session_name.set(res['payload']['session_name']);
         this.graphService.graph_data = res['payload'];
         this.graphService.generateFilterOptions();
@@ -169,7 +167,6 @@ export class NetworkViewComponentComponent {
           this.errorMessage = res.message;
           return;
         }
-        console.log(res);
         this.graphService.graph_data = res['payload'];
         if (reset_style) {
           this.currentSizeOption.set("none");
@@ -262,7 +259,6 @@ export class NetworkViewComponentComponent {
             this.errorMessage = res.message;
             return;
           }
-          console.log(res);
           this.updateGraph();
         },
       });
@@ -281,7 +277,6 @@ export class NetworkViewComponentComponent {
           this.errorMessage = res.message;
           return;
         }
-        console.log(res);
         this.graphService.updateGraph(this.cy);
       },
     });
@@ -311,10 +306,8 @@ export class NetworkViewComponentComponent {
     this.networkService.getMetrics(this.session_id, metricsFormData).subscribe({
       next:(res:any) => {
           if(res['status'] != 0){
-            console.log(res)
             return;
           }
-          console.log(res);
           this.graphService.nodeMetrics = res['payload'];
           this.graphService.updateGraph(this.cy);
       }
@@ -325,7 +318,6 @@ export class NetworkViewComponentComponent {
     this.networkService.resetAnalyticsPreferences(this.session_id).subscribe({
       next:(res:any) => {
         if(res['status'] != 0){
-          console.log(res)
           return;
         }
         this.selectedColor.set("");
@@ -335,7 +327,6 @@ export class NetworkViewComponentComponent {
         this.graphService.selectedColorOption = "";
         this.graphService.selectedshapeOption = "";
         this.graphService.updateGraph(this.cy);
-        console.log(res);
       }
     });
   }
@@ -380,7 +371,6 @@ export class NetworkViewComponentComponent {
 
 
       this.graphService.selectedNode.set(nodeInfo);
-      console.log(this.graphService.selectedNode());
     }
   }
   openModal(content: TemplateRef<any>) {
@@ -404,7 +394,6 @@ export class NetworkViewComponentComponent {
             this.errorMessage = res.message;
             return;
           }
-          console.log(res);
         },
       });
   }
@@ -424,7 +413,6 @@ export class NetworkViewComponentComponent {
           this.errorMessage = res.message;
           return;
         }
-        console.log(res);
       },
     });
   }

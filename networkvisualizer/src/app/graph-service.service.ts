@@ -300,7 +300,6 @@ export class GraphService {
   // Populate the graphstyle property of the class from the data received from the server
   public setGraphStyles(graph_preferernces:any){
 
-    console.log(graph_preferernces)
     if (!graph_preferernces.hasOwnProperty('graph_styles')){
       console.log("No style found")
       return
@@ -316,7 +315,6 @@ export class GraphService {
       }
     });
     this.graphStyle = temp; 
-    console.log(this.graphStyle)
   }
 
   // Used to update the node position after used selects a layout
@@ -376,7 +374,6 @@ export class GraphService {
   private updateNodeSizes(cy:any){
       
     // when size by is none
-    console.log(this.selectedSizeOption);
     if (this.selectedSizeOption == ""){
       console.log("reverted to none")
 

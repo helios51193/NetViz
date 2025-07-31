@@ -44,13 +44,10 @@ export class NetworkLoaderComponentComponent {
   fetchSessions(){
     return this.networkService.getSession().subscribe({
       next: (response: any) => {
-        console.log(response);
         if (response['status'] != 0) {
-          console.log(response['message']);
           return;
         }
         this.sessions.set(response['payload']);
-        console.log(this.sessions());
       },
     });
   }
@@ -78,7 +75,6 @@ export class NetworkLoaderComponentComponent {
     formData.append('cytoFile', this.cytoForm.get('cytoFile')?.value as File);
     this.networkService.uploadCyto(formData).subscribe({
       next: (response: any) => {
-        console.log(response);
         if (response['status'] == 0) {
           this.networkService.current_session.set({
             session_id: response['payload']['session_id'],
@@ -109,7 +105,6 @@ export class NetworkLoaderComponentComponent {
     );
     this.networkService.uploadExcel(formData).subscribe({
       next: (response: any) => {
-        console.log(response);
 
         if (response['status'] == 0) {
           this.networkService.current_session.set({
@@ -160,7 +155,6 @@ export class NetworkLoaderComponentComponent {
     if (confirm(`Are you sure you want to delete this ${selected_session?.session_name} ? `)) {
       this.networkService.deleteSession(session_id as string).subscribe({
         next: (response: any) => {
-          console.log(response);
           if (response['status'] == 0) {
             this.fetchSessions();
             this.oldSessionForm.get('session_id')?.setValue('');
